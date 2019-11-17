@@ -22,6 +22,7 @@ export class APIUser {
         twoFactor: boolean;
         profilePicture: string;
         publicKey: string;
+        createdAt: number;
     }> = Promise.reject("User profile is unset. Initialisation went wrong!")
 
     // Constructs the class.
@@ -108,7 +109,7 @@ export class APIUser {
         if (!token || !decryptionKey) return
 
         // Gets the encrypted private key and decrypt it.
-        const encryptedKeyResponse = await axios.get("/api/v1/crypto/private_key", {
+        const encryptedKeyResponse = await axios.get("/api/v1/user/private_key", {
             headers: {
                 Token: token,
             },
@@ -122,7 +123,7 @@ export class APIUser {
 
         // Creates a user class.
         const user = new APIUser(cryptr, privateKey, token)
-        user.profile = (async() => axios.get("/api/v1/profile", {
+        user.profile = (async() => axios.get("/api/v1/user/profile", {
             headers: {
                 Token: token,
             },

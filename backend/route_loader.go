@@ -13,4 +13,7 @@ func RouteLoader(router *fasthttprouter.Router) {
 			"Description": "Spherical is an encrypted and secure alternative to platforms such as Facebook.",
 		}, ctx)
 	})
+	router.GET("/api/v1/user/auth", UserAuth)
+	router.GET("/api/v1/user/private_key", UserPrivateKey)
+	router.GET("/api/v1/user/profile", UserProfile)
 }

@@ -17,19 +17,38 @@ type UserInfo struct {
 	TwoFactor      bool    `gorethink:"twoFactor"`
 	ProfilePicture string  `gorethink:"profilePicture"`
 	PublicKey      string  `gorethink:"publicKey"`
+	CreatedAt      int     `gorethink:"createdAt"`
 }
 
 // User is the base for a user.
 type User struct {
-	Info     *UserInfo `rethinkdb:"email,reference" rethinkdb_ref:"id"`
-	Password string    `gorethink:"password"`
-	Email    string    `gorethink:"id,omitempty"`
-	Tokens   []string  `gorethink:"tokens"`
+	Info                *UserInfo `rethinkdb:"email,reference" rethinkdb_ref:"id"`
+	Password            string    `gorethink:"password"`
+	Email               string    `gorethink:"id,omitempty"`
+	Tokens              []string  `gorethink:"tokens"`
+	EncryptedPrivateKey string    `gorethink:"encryptedPrivateKey"`
 }
 
 // GetUserByEmail gets the user by their e-mail address.
 func GetUserByEmail(Email string) *User {
 	res, err := r.Table("users").Get(strings.ToLower(Email)).Run(RethinkConnection)
+	if err != nil {
+		return nil
+	}
+	if res.IsNil() {
+		return nil
+	}
+	var user User
+	err = res.One(&user)
+	if err != nil {
+		panic(err)
+	}
+	return &user
+}
+
+// GetUserByToken gets the user by their token.
+func GetUserByToken(Token string) *User {
+	res, err := r.Table("users").GetAllByIndex("tokens", Token).Run(RethinkConnection)
 	if err != nil {
 		return nil
 	}
