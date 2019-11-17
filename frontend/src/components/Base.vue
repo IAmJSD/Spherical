@@ -1,0 +1,20 @@
+<template>
+    <div class="base">
+        <Navbar :hidden="$props.navbarHidden"></Navbar>
+        <slot></slot>
+    </div>
+</template>
+
+<script>
+    import Navbar from "./Navbar.vue"
+
+    export default {
+        name: "BaseComponent",
+        components: {
+            Navbar,
+        },
+        props: {
+            navbarHidden: Boolean,
+        },
+    }
+</script>

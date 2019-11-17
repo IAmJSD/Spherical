@@ -1,0 +1,34 @@
+{
+  "name": "frontend",
+  "version": "1.0.0",
+  "description": "The frontend for Spherical.",
+  "scripts": {
+    "build:js": "parcel build ./src/mount.js --no-content-hash",
+    "build:scss": "parcel build ./src/styling.scss --no-content-hash",
+    "build": "npm run build:js && npm run build:scss"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/spherical/spherical.git"
+  },
+  "keywords": [
+    "frontend"
+  ],
+  "author": "Spherical Development Team",
+  "license": "MPL-2.0",
+  "bugs": {
+    "url": "https://github.com/spherical/spherical/issues"
+  },
+  "homepage": "https://github.com/spherical/spherical#readme",
+  "devDependencies": {
+    "@vue/component-compiler-utils": "^3.0.2",
+    "sass": "^1.23.6",
+    "vue-template-compiler": "^2.6.10"
+  },
+  "dependencies": {
+    "bulma": "^0.8.0",
+    "parcel-bundler": "^1.12.4",
+    "vue": "^2.6.10",
+    "vue-router": "^3.1.3"
+  }
+}
