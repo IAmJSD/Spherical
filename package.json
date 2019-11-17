@@ -1,0 +1,26 @@
+{
+  "name": "spherical",
+  "version": "1.0.0",
+  "description": "Spherical is a encrypted and privacy focused social media network.",
+  "scripts": {
+    "free-port": "kill -9 $(lsof -t -i :8000) &> /dev/null || echo 'Port not active.'",
+    "dev-run": "cd frontend/ && npm i && npm run build && cd .. && go get . && npm run free-port && go run .",
+    "dev-restart": "nodemon --ext '.' --ignore frontend/.cache --ignore frontend/dist --ignore frontend/node_modules --ignore **/package-lock.json --exec 'npm run dev-run'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Spherical/Spherical.git"
+  },
+  "keywords": [
+    "privacy"
+  ],
+  "author": "Spherical Development Team",
+  "license": "MPL-2.0",
+  "bugs": {
+    "url": "https://github.com/Spherical/Spherical/issues"
+  },
+  "homepage": "https://github.com/Spherical/Spherical#readme",
+  "devDependencies": {
+    "nodemon": "^1.19.4"
+  }
+}

@@ -20,5 +20,5 @@ func Start() {
 
 	// Loads the server.
 	println("Spherical is loading into port 8000!")
-	log.Fatal(fasthttp.ListenAndServe("0.0.0.0:8000", router.Handler))
+	log.Fatal(fasthttp.ListenAndServe(":8000", router.Handler))
 }
