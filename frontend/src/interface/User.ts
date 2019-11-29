@@ -1,6 +1,5 @@
 // Imports needed stuff.
 import axios from "axios"
-import TweetNaCL from "tweetnacl"
 import Cryptr from "cryptr"
 // @ts-ignore
 import * as toUint8ArrayDef from "base64-to-uint8array"
@@ -123,7 +122,7 @@ export class APIUser {
 
         // Creates a user class.
         const user = new APIUser(cryptr, privateKey, token)
-        user.profile = (async() => axios.get("/api/v1/user/profile", {
+        user.profile = await axios.get("/api/v1/user/profile", {
             headers: {
                 Token: token,
             },
@@ -131,12 +130,7 @@ export class APIUser {
                 return status >= 200 && status < 300
             },
             responseType: "arraybuffer",
-        }).then(r => {
-            const blob = r.data as Uint8Array
-            const nonce = blob.subarray(0, 24)
-            const data = blob.subarray(24)
-            return { nonce, data }
-        }).then(res => JSON.parse(String.fromCharCode.apply(null, TweetNaCL.secretbox(res.data, res.nonce, privateKey)))))()
+        }).then(r => r.data)
         return user
     }
 }

@@ -103,7 +103,7 @@ func UserProfile(ctx *fasthttp.RequestCtx) {
 
 	// Returns the users profile in encrypted form.
 	ctx.Response.SetStatusCode(200)
-	ctx.Response.Header.SetContentType("application/encrypted-json")
+	ctx.Response.Header.SetContentType("application/json")
 	j, err := json.Marshal(user.Info)
 	if err != nil {
 		panic(err)

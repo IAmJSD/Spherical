@@ -2,6 +2,9 @@
 import Vue from "vue"
 import VueRouter from "vue-router"
 
+// Gets the payload.
+import "./payload"
+
 // Imports all of the used routes.
 import Home from "./routes/Home.vue"
 import App from "./components/App.vue"
