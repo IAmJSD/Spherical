@@ -10,7 +10,7 @@ import Home from "./routes/Home.vue"
 import App from "./components/App.vue"
 
 // Tells Vue to use the router.
-Vue.use(VueRouter)
+Vue.use(VueRouter);
 
 // Creates the router.
 const router = new VueRouter({
@@ -22,11 +22,11 @@ const router = new VueRouter({
             component: Home,
         },
     ],
-})
+});
 
 // Creates the Vue instance.
 new Vue({
     el: "#app",
     router,
     render: x => x(App),
-})
+});

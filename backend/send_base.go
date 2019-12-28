@@ -14,5 +14,5 @@ var base, _ = ioutil.ReadFile("./base.html")
 func SendBase(Args map[string]interface{}, ctx *fasthttp.RequestCtx) {
 	template := template.Must(template.New("base").Parse(string(base)))
 	ctx.SetContentType("text/html; charset=utf-8")
-	template.Execute(ctx, Args)
+	_ = template.Execute(ctx, Args)
 }

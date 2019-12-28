@@ -55,34 +55,6 @@ func UserAuth(ctx *fasthttp.RequestCtx) {
 	ctx.SetBody([]byte("\"" + AuthToken + "\""))
 }
 
-// UserPrivateKey returns the users private key.
-func UserPrivateKey(ctx *fasthttp.RequestCtx) {
-	// Gets the user.
-	Token := string(ctx.Request.Header.Peek("Token"))
-	if Token == "" {
-		ctx.Response.SetStatusCode(403)
-		ctx.Response.Header.SetContentType("application/json")
-		ctx.SetBody([]byte("null"))
-		return
-	}
-	user := GetUserByToken(Token)
-	if user == nil {
-		ctx.Response.SetStatusCode(403)
-		ctx.Response.Header.SetContentType("application/json")
-		ctx.SetBody([]byte("null"))
-		return
-	}
-
-	// Returns the users private key in encrypted form.
-	ctx.Response.SetStatusCode(200)
-	ctx.Response.Header.SetContentType("application/json")
-	j, err := json.Marshal(&user.EncryptedPrivateKey)
-	if err != nil {
-		panic(err)
-	}
-	ctx.Response.SetBody(j)
-}
-
 // UserProfile gets a users profile.
 func UserProfile(ctx *fasthttp.RequestCtx) {
 	// Gets the user.

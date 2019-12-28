@@ -16,7 +16,6 @@ type UserInfo struct {
 	PhoneHash      *string `gorethink:"phoneHash"`
 	TwoFactor      bool    `gorethink:"twoFactor"`
 	ProfilePicture string  `gorethink:"profilePicture"`
-	PublicKey      string  `gorethink:"publicKey"`
 	CreatedAt      int     `gorethink:"createdAt"`
 }
 
@@ -26,7 +25,6 @@ type User struct {
 	Password            string    `gorethink:"password"`
 	Email               string    `gorethink:"id,omitempty"`
 	Tokens              []string  `gorethink:"tokens"`
-	EncryptedPrivateKey string    `gorethink:"encryptedPrivateKey"`
 }
 
 // GetUserByEmail gets the user by their e-mail address.

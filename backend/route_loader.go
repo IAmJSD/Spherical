@@ -15,6 +15,5 @@ func RouteLoader(router *fasthttprouter.Router) {
 		}, ctx)
 	})
 	router.GET("/api/v1/user/auth", UserAuth)
-	router.GET("/api/v1/user/private_key", UserPrivateKey)
 	router.GET("/api/v1/user/profile", UserProfile)
 }
