@@ -1,13 +1,16 @@
 // Imports everything needed for initialisation.
-import Vue from "vue"
-import VueRouter from "vue-router"
+import Vue from "vue";
+import VueRouter from "vue-router";
 
 // Gets the payload.
-import "./payload"
+import "./payload";
+
+// Loads the interfaces.
+import "./interface/User";
 
 // Imports all of the used routes.
-import Home from "./routes/Home.vue"
-import App from "./components/App.vue"
+import Home from "./routes/Home.vue";
+import App from "./components/App.vue";
 
 // Tells Vue to use the router.
 Vue.use(VueRouter);

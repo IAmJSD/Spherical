@@ -8,9 +8,10 @@ import (
 
 // UserInfo defines information about the user.
 type UserInfo struct {
+	ID string `gorethink:"id,omitempty"`
 	FirstName      string  `gorethink:"firstName"`
 	LastName       string  `gorethink:"lastName"`
-	Email          *string `gorethink:"-"` // This value should be manually set to avoid repeating stuff.
+	Email          string `gorethink:"email"`
 	EmailConfirmed bool    `gorethink:"emailConfirmed"`
 	Description    string  `gorethink:"description"`
 	PhoneHash      *string `gorethink:"phoneHash"`
@@ -21,7 +22,8 @@ type UserInfo struct {
 
 // User is the base for a user.
 type User struct {
-	Info                *UserInfo `rethinkdb:"email,reference" rethinkdb_ref:"id"`
+	Info                *UserInfo `rethinkdb:"userId,reference" rethinkdb_ref:"id"`
+	UserID string `gorethink:"userId"`
 	Password            string    `gorethink:"password"`
 	Email               string    `gorethink:"id,omitempty"`
 	Tokens              []string  `gorethink:"tokens"`
@@ -59,4 +61,21 @@ func GetUserByToken(Token string) *User {
 		panic(err)
 	}
 	return &user
+}
+
+// GetUserByID gets the user by their ID.
+func GetUserByID(ID string) *User {
+	res, err := r.Table("user_info").Get(ID).Run(RethinkConnection)
+	if err != nil {
+		return nil
+	}
+	if res.IsNil() {
+		return nil
+	}
+	var user User
+	err = res.One(&user)
+	if err != nil {
+		panic(err)
+	}
+	return GetUserByEmail(user.UserID)
 }

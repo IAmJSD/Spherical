@@ -1,5 +1,5 @@
 <template>
-    <div class="base">
+    <div class="spherical-base">
         <Navbar :hidden="navbarHidden"></Navbar>
         <slot></slot>
     </div>

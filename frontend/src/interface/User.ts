@@ -1,5 +1,6 @@
 // Imports needed stuff.
 import axios from "axios"
+import Vue from "vue"
 
 // The user API interface.
 export class APIUser {
@@ -15,6 +16,7 @@ export class APIUser {
         twoFactor: boolean;
         profilePicture: string;
         createdAt: number;
+        id: string;
     }> = Promise.reject("User profile is unset. Initialisation went wrong!");
 
     // Constructs the class.
@@ -33,9 +35,6 @@ export class APIUser {
 
         // Removes the token.
         localStorage.removeItem("token");
-
-        // Set the signed in user to null.
-        signedInUser = null;
     }
 
     // Logs into Spherical.
@@ -73,9 +72,7 @@ export class APIUser {
         localStorage.setItem("token", token);
 
         // Does the remainder of the login.
-        const user = this.browserLogin();
-        signedInUser = user;
-        return user;
+        return this.browserLogin();
     }
 
     // Logs in from the browser information.
@@ -101,8 +98,43 @@ export class APIUser {
     }
 }
 
-// The currently signed in user.
-let signedInUser: Promise<null | APIUser> = APIUser.browserLogin();
-
-// Returns the user.
-export default signedInUser;
+// Set the signed in user as a mixin.
+Vue.mixin({
+    data() {
+        return {
+            signedInUser: null,
+            profile: {},
+        };
+    },
+    methods: {
+        login(email: string, password: string) {
+            const vm = this;
+            return APIUser.login(email, password).then(result => {
+                vm.$data.signedInUser = result;
+                if (result) {
+                    result.profile.then((p: any) => {
+                        vm.$data.profile = p;
+                    });
+                }
+            });
+        },
+        logout() {
+            const vm = this;
+            return this.$data.signedInUser.logout().then(() => {
+                vm.$data.signedInUser = null;
+                vm.$data.profile = {};
+            });
+        },
+    },
+    created() {
+        const vm = this;
+        APIUser.browserLogin().then(result => {
+            vm.$data.signedInUser = result;
+            if (result) {
+                result.profile.then((p: any) => {
+                    vm.$data.profile = p;
+                });
+            }
+        });
+    },
+});
