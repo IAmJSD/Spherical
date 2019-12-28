@@ -1,6 +1,6 @@
 <template>
     <div class="base">
-        <Navbar :hidden="$props.navbarHidden"></Navbar>
+        <Navbar :hidden="navbarHidden"></Navbar>
         <slot></slot>
     </div>
 </template>

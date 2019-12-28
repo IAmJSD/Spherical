@@ -1,5 +1,5 @@
 <template>
-    <div v-if="!$props.hidden">
+    <div v-if="!hidden">
         <h1>navbar</h1>
     </div>
 </template>
