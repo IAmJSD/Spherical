@@ -10,7 +10,7 @@ func RouteLoader(router *fasthttprouter.Router) {
 	router.GET("/", func(ctx *fasthttp.RequestCtx) {
 		SendBase(map[string]interface{}{
 			"Title":       "Spherical",
-			"Description": "Spherical is an encrypted and secure alternative to platforms such as Facebook.",
+			"Description": "Spherical is an open source, encrypted and secure alternative to platforms such as Facebook.",
 			"Payload":     "{}",
 		}, ctx)
 	})
