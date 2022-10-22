@@ -1,10 +1,14 @@
 package db
 
 import (
+	"bytes"
 	"context"
 	"embed"
+	"fmt"
 	"sort"
 	"time"
+
+	"github.com/jackc/pgx/v4"
 )
 
 //go:embed migrations/*.sql
@@ -44,12 +48,12 @@ func Migrate() error {
 	}
 
 	// Acquire a lock on the table.
-	_, err = c.Exec(contextMaker(), "SELECT pg_advisory_lock('migrate') FROM migrations")
+	_, err = c.Exec(contextMaker(), "SELECT pg_advisory_lock(69420)")
 	if err != nil {
 		return err
 	}
 	defer func() {
-		_, _ = c.Exec(contextMaker(), "SELECT pg_advisory_unlock('migrate') FROM migrations")
+		_, _ = c.Exec(contextMaker(), "SELECT pg_advisory_unlock(69420)")
 	}()
 
 	// Get all the migrations from the table.
@@ -72,6 +76,49 @@ func Migrate() error {
 	for _, filename := range filenames {
 		// Check if it has already been ran.
 		ran := false
-		
+		for _, dbFilename := range migrationsRan {
+			if dbFilename == filename {
+				fmt.Println("[db] Migration", filename, "already ran - skipping!")
+				ran = true
+				break
+			}
+		}
+
+		// Run the migration if not.
+		if !ran {
+			// Get the migration SQL.
+			migrationSql, err := migrations.ReadFile("migrations/" + filename)
+			if err != nil {
+				return err
+			}
+
+			// Check if it starts with "-- nosplit".
+			parts := [][]byte{}
+			if bytes.HasPrefix(migrationSql, []byte("-- nosplit")) {
+				parts = [][]byte{migrationSql}
+			} else {
+				parts = bytes.Split(migrationSql, []byte(";"))
+			}
+			batch := &pgx.Batch{}
+			for _, v := range parts {
+				batch.Queue(string(v))
+			}
+			batch.Queue("INSERT INTO migrations (filename) VALUES ($1)", filename)
+			fmt.Print("[db] Running migration ", filename, "...")
+			results := c.SendBatch(contextMaker(), batch)
+			for i := 0; i < len(parts)+1; i++ {
+				_, err = results.Exec()
+				if err != nil && err.Error() != "no result" {
+					_ = results.Close()
+					panic(err)
+				}
+			}
+			_ = results.Close()
+			fmt.Println(" success!")
+		}
 	}
+
+	// Return no errors.
+	fmt.Println("[db] All migrations ran!")
+	return nil
 }

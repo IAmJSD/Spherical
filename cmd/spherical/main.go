@@ -23,12 +23,12 @@ func main() {
 	displayVersion()
 
 	// Connect to the database.
-	fmt.Println("[db] Connecting to postgres")
+	fmt.Print("[db] Connecting to postgres...")
 	err := db.Init(*postgresUrl)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("[db] Successfully connected")
+	fmt.Println(" success!")
 
 	// Run the database migrations.
 	err = db.Migrate()
