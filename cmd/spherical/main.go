@@ -6,11 +6,12 @@ import (
 	"os"
 
 	"github.com/ProtonMail/gopenpgp/v2/crypto"
+	"github.com/common-nighthawk/go-figure"
 	"github.com/jakemakesstuff/spherical/db"
 )
 
 func displayVersion() {
-	// TODO
+	figure.NewFigure("Spherical", "rectangles", true).Print()
 }
 
 func main() {

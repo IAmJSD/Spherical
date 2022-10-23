@@ -4,6 +4,7 @@ go 1.19
 
 require (
 	github.com/ProtonMail/gopenpgp/v2 v2.4.10
+	github.com/common-nighthawk/go-figure v0.0.0-20210622060536-734e95fb86be
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/google/uuid v1.3.0
 	github.com/jackc/pgx/v4 v4.17.2
