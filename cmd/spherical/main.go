@@ -18,6 +18,8 @@ func main() {
 	// Get the flags.
 	postgresUrl := flag.String("postgres-url", os.Getenv("POSTGRES_URL"),
 		"the postgres connection url - defaults to the POSTGRES_URL env variable")
+	redisUrl := flag.String("redis-url", os.Getenv("REDIS_URL"),
+		"the redis connection url - defaults to the REDIS_URL env variable")
 	migrationsOnly := flag.Bool("migrations-only", false, "only run migrations and then return")
 	flag.Parse()
 
@@ -25,8 +27,8 @@ func main() {
 	displayVersion()
 
 	// Connect to the database.
-	fmt.Print("[db] Connecting to postgres...")
-	err := db.Init(*postgresUrl)
+	fmt.Print("[db] Connecting to postgres and redis...")
+	err := db.Init(*postgresUrl, *redisUrl)
 	if err != nil {
 		panic(err)
 	}

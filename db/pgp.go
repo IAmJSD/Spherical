@@ -18,7 +18,7 @@ func GetPGPKey(maker func() (pubKey, privKey string)) (pubKey, privKey string, e
 	}()
 
 	// Make sure the pgp table exists.
-	c := conn()
+	c := dbConn()
 	_, err = c.Exec(ctx, "CREATE TABLE IF NOT EXISTS pgp_key (pub_key TEXT NOT NULL, priv_key TEXT NOT NULL)")
 	if err != nil {
 		return

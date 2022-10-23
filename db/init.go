@@ -5,28 +5,30 @@ import (
 	"sync"
 	"time"
 
+	"github.com/go-redis/redis/v8"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 var (
-	currentConn     *pgxpool.Pool
-	currentConnLock sync.RWMutex
+	currentPgConn    *pgxpool.Pool
+	currentRedisConn *redis.Client
+	currentConnLock  sync.RWMutex
 )
 
-func conn() *pgxpool.Pool {
+func dbConn() *pgxpool.Pool {
 	currentConnLock.RLock()
 	defer currentConnLock.RUnlock()
-	return currentConn
+	return currentPgConn
 }
 
 // Init is used to initialise the database connection.
-func Init(connectionUrl string) error {
+func Init(pgConnectionUrl, redisConnectionUrl string) error {
 	currentConnLock.Lock()
 	defer currentConnLock.Unlock()
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*2)
 	defer cancel()
-	conn, err := pgxpool.Connect(ctx, connectionUrl)
+	conn, err := pgxpool.Connect(ctx, pgConnectionUrl)
 	if err != nil {
 		return err
 	}
@@ -36,6 +38,20 @@ func Init(connectionUrl string) error {
 		return err
 	}
 
-	currentConn = conn
+	opts := &redis.Options{}
+	if redisConnectionUrl != "" {
+		opts, err = redis.ParseURL(redisConnectionUrl)
+		if err != nil {
+			return err
+		}
+	}
+	redisClient := redis.NewClient(opts)
+	err = redisClient.Ping(ctx).Err()
+	if err != nil {
+		return err
+	}
+
+	currentPgConn = conn
+	currentRedisConn = redisClient
 	return nil
 }

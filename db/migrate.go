@@ -41,7 +41,7 @@ func Migrate() error {
 	}
 
 	// Ensure the migrations table exists.
-	c := conn()
+	c := dbConn()
 	_, err = c.Exec(contextMaker(), "CREATE TABLE IF NOT EXISTS migrations (filename TEXT PRIMARY KEY)")
 	if err != nil {
 		return err
