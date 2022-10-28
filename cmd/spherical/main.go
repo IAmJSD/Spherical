@@ -1,18 +1,32 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
+	"net/http"
 	"os"
+	"time"
 
 	"github.com/ProtonMail/gopenpgp/v2/crypto"
 	"github.com/common-nighthawk/go-figure"
+	"github.com/jakemakesstuff/spherical/assets"
 	"github.com/jakemakesstuff/spherical/config"
 	"github.com/jakemakesstuff/spherical/db"
+	"github.com/jakemakesstuff/spherical/httproutes"
 )
 
 func displayVersion() {
 	figure.NewFigure("Spherical", "rectangles", true).Print()
+}
+
+func oneOf(values ...string) string {
+	for _, v := range values {
+		if v != "" {
+			return v
+		}
+	}
+	return ""
 }
 
 func main() {
@@ -21,6 +35,9 @@ func main() {
 		"the postgres connection url - defaults to the POSTGRES_URL env variable")
 	redisUrl := flag.String("redis-url", os.Getenv("REDIS_URL"),
 		"the redis connection url - defaults to the REDIS_URL env variable")
+	listener := flag.String("listen-addr", oneOf(os.Getenv("LISTEN_ADDR"), "127.0.0.1:5000"),
+		"defines the string to listen on, Defaults to the LISTEN_ADDR env variable, or if that is not present, "+
+			"127.0.0.1:5000.")
 	migrationsOnly := flag.Bool("migrations-only", false, "only run migrations and then return")
 	flag.Parse()
 
@@ -43,6 +60,11 @@ func main() {
 	// If this is just migrations, do not continue any further.
 	if *migrationsOnly {
 		return
+	}
+
+	// Generate the application assets.
+	if err := assets.Init(); err != nil {
+		panic(err)
 	}
 
 	// Generate or get the PGP key.
@@ -79,6 +101,27 @@ func main() {
 
 	// Start watching the config.
 	if err := config.Watch(); err != nil {
+		panic(err)
+	}
+
+	// Get the setup key if this is not already configured.
+	if !config.Config().Setup {
+		// Get the setup key and repeat it in the console.
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*2)
+		defer cancel()
+		key, err := db.SetupKey(ctx)
+		if err != nil {
+			panic(err)
+		}
+		logMessage := "[setup] Your setup key is " + key + " - repeating 3 times!"
+		for i := 0; i < 3; i++ {
+			fmt.Println(logMessage)
+		}
+	}
+
+	// Start the listener.
+	fmt.Println("[http] Starting listener on", *listener)
+	if err := http.ListenAndServe(*listener, httproutes.SelectRouter()); err != nil {
 		panic(err)
 	}
 }

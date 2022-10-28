@@ -65,3 +65,22 @@ func UpdateConfig(ctx context.Context, key string, value any) error {
 		return err
 	}, configChange{Key: key, Value: valueMarshal})
 }
+
+// SetupKey makes the setup key and returns it. Returns an existing key if it was already edited.
+func SetupKey(ctx context.Context) (string, error) {
+	query := `INSERT INTO config (key, value) VALUES ('setup_key',
+		CAST(CONCAT('"', CAST(gen_random_uuid() AS TEXT), '"') AS JSONB)
+	) ON CONFLICT (key) DO UPDATE SET key = 'setup_key' RETURNING value`
+	var setupKey pgtype.JSONB
+	err := dbConn().QueryRow(ctx, query).Scan(&setupKey)
+	if err != nil {
+		return "", err
+	}
+	var msg json.RawMessage
+	err = setupKey.AssignTo(&msg)
+	var val string
+	if err == nil {
+		err = json.Unmarshal(msg, &val)
+	}
+	return val, err
+}
