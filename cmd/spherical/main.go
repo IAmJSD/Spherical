@@ -7,6 +7,7 @@ import (
 
 	"github.com/ProtonMail/gopenpgp/v2/crypto"
 	"github.com/common-nighthawk/go-figure"
+	"github.com/jakemakesstuff/spherical/config"
 	"github.com/jakemakesstuff/spherical/db"
 )
 
@@ -74,5 +75,10 @@ func main() {
 	}
 	if !key.IsPrivate() {
 		panic("key is not private")
+	}
+
+	// Start watching the config.
+	if err := config.Watch(); err != nil {
+		panic(err)
 	}
 }
