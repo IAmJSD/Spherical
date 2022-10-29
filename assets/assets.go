@@ -129,7 +129,7 @@ var (
 )
 
 type fakeFile struct {
-	io.ReadCloser
+	r *bytes.Reader
 
 	b        []byte
 	filename string
@@ -159,7 +159,7 @@ func (s staticStat) Sys() any { return nil }
 func (f fakeFile) Stat() (fs.FileInfo, error) {
 	return staticStat{
 		name:    f.filename,
-		size:    int64(len(f.filename)),
+		size:    int64(len(f.b)),
 		mode:    0o777,
 		modTime: time.Now(),
 		isDir:   false,
@@ -167,11 +167,31 @@ func (f fakeFile) Stat() (fs.FileInfo, error) {
 	}, nil
 }
 
+func (f fakeFile) Read(b []byte) (int, error) {
+	return f.r.Read(b)
+}
+
+func (f fakeFile) ReadAt(p []byte, off int64) (n int, err error) {
+	return f.r.ReadAt(p, off)
+}
+
+func (f fakeFile) Seek(offset int64, whence int) (int64, error) {
+	return f.r.Seek(offset, whence)
+}
+
+var (
+	_ io.Reader   = fakeFile{}
+	_ io.ReaderAt = fakeFile{}
+	_ io.Seeker   = fakeFile{}
+)
+
+func (f fakeFile) Close() error { return nil }
+
 func newFakeFile(b []byte, filename string) fs.File {
 	return fakeFile{
-		ReadCloser: io.NopCloser(bytes.NewReader(b)),
-		b:          b,
-		filename:   filename,
+		r:        bytes.NewReader(b),
+		b:        b,
+		filename: filename,
 	}
 }
 
@@ -247,10 +267,15 @@ func Init() error {
 		// Compiles the JS bundle.
 		fmt.Print("[assets] Compiling JS asset " + bundleName + "...")
 		result := api.Build(api.BuildOptions{
-			EntryPoints:   []string{entrypoint},
-			AbsWorkingDir: jsFolder,
-			Outfile:       filepath.Join(jsFolder, "out.js"),
-			Sourcemap:     api.SourceMapExternal,
+			EntryPoints:       []string{entrypoint},
+			AbsWorkingDir:     jsFolder,
+			Outfile:           filepath.Join(jsFolder, "out.js"),
+			Sourcemap:         api.SourceMapExternal,
+			MinifyIdentifiers: true,
+			MinifySyntax:      true,
+			MinifyWhitespace:  true,
+			Target:            api.ES2020,
+			Bundle:            true,
 		})
 		if len(result.Errors) != 0 {
 			errorStrings := []string{}
@@ -302,10 +327,14 @@ func Init() error {
 		// Compiles the CSS bundle.
 		fmt.Print("[assets] Compiling CSS asset " + bundleName + "...")
 		result := api.Build(api.BuildOptions{
-			EntryPoints:   []string{entrypoint},
-			AbsWorkingDir: CSSFolder,
-			Outfile:       filepath.Join(jsFolder, "out.css"),
-			Sourcemap:     api.SourceMapExternal,
+			EntryPoints:       []string{entrypoint},
+			AbsWorkingDir:     CSSFolder,
+			Outfile:           filepath.Join(jsFolder, "out.css"),
+			Sourcemap:         api.SourceMapExternal,
+			MinifyIdentifiers: true,
+			MinifySyntax:      true,
+			MinifyWhitespace:  true,
+			Bundle:            true,
 		})
 		if len(result.Errors) != 0 {
 			errorStrings := []string{}
