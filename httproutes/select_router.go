@@ -9,9 +9,9 @@ import (
 )
 
 // SelectRouter is a function used to select the router based on the state of the config.
-func SelectRouter() http.Handler {
-	appRouter := application.Router()
-	oobeRouter := oobe.Router()
+func SelectRouter(dev bool) http.Handler {
+	appRouter := application.Router(dev)
+	oobeRouter := oobe.Router(dev)
 	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		if config.Config().Setup {
 			// Use the main router.

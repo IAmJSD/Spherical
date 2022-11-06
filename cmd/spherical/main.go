@@ -6,11 +6,12 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/ProtonMail/gopenpgp/v2/crypto"
 	"github.com/common-nighthawk/go-figure"
-	"github.com/jakemakesstuff/spherical/assets"
+	packagejson "github.com/jakemakesstuff/spherical"
 	"github.com/jakemakesstuff/spherical/config"
 	"github.com/jakemakesstuff/spherical/db"
 	"github.com/jakemakesstuff/spherical/httproutes"
@@ -18,6 +19,8 @@ import (
 
 func displayVersion() {
 	figure.NewFigure("Spherical", "rectangles", true).Print()
+	p := packagejson.Package()
+	fmt.Println("Version", p.Version, "\n---------------------------")
 }
 
 func oneOf(values ...string) string {
@@ -27,6 +30,11 @@ func oneOf(values ...string) string {
 		}
 	}
 	return ""
+}
+
+func boolVal(s string) bool {
+	s = strings.TrimSpace(strings.ToLower(s))
+	return s == "yes" || s == "true" || s == "1"
 }
 
 func main() {
@@ -60,11 +68,6 @@ func main() {
 	// If this is just migrations, do not continue any further.
 	if *migrationsOnly {
 		return
-	}
-
-	// Generate the application assets.
-	if err := assets.Init(); err != nil {
-		panic(err)
 	}
 
 	// Generate or get the PGP key.
@@ -121,7 +124,7 @@ func main() {
 
 	// Start the listener.
 	fmt.Println("[http] Starting listener on", *listener)
-	if err := http.ListenAndServe(*listener, httproutes.SelectRouter()); err != nil {
+	if err := http.ListenAndServe(*listener, httproutes.SelectRouter(boolVal(os.Getenv("DEV")))); err != nil {
 		panic(err)
 	}
 }

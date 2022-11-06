@@ -1,9 +1,0 @@
-{
-  "static_content": "static",
-  "js": {
-    "main": "index.js"
-  },
-  "css": {
-    "main": "index.css"
-  }
-}
