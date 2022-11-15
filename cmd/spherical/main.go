@@ -14,6 +14,7 @@ import (
 	packagejson "github.com/jakemakesstuff/spherical"
 	"github.com/jakemakesstuff/spherical/config"
 	"github.com/jakemakesstuff/spherical/db"
+	"github.com/jakemakesstuff/spherical/html"
 	"github.com/jakemakesstuff/spherical/httproutes"
 )
 
@@ -51,6 +52,10 @@ func main() {
 
 	// Print the version.
 	displayVersion()
+
+	// Setup the HTML templater.
+	isDev := boolVal(os.Getenv("DEV"))
+	html.Setup(isDev)
 
 	// Connect to the database.
 	fmt.Print("[db] Connecting to postgres and redis...")
@@ -124,7 +129,7 @@ func main() {
 
 	// Start the listener.
 	fmt.Println("[http] Starting listener on", *listener)
-	if err := http.ListenAndServe(*listener, httproutes.SelectRouter(boolVal(os.Getenv("DEV")))); err != nil {
+	if err := http.ListenAndServe(*listener, httproutes.SelectRouter(isDev)); err != nil {
 		panic(err)
 	}
 }

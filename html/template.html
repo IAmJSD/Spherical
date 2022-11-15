@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>{{ .Title }}</title>
+        {{ .AdditionalHead }}
+        <!-- TODO: HTML -->
+    </head>
+
+    <body>
+        <div id="__metadata" style="display: none">{{ .Metadata }}</div>
+        <div id="app_mount"></div>
+
+        <noscript>
+            <h1>Spherical requires JavaScript to run.</h1>
+            <p>Please re-enable JavaScript and refresh the page!</p>
+        </noscript>
+
+        {{ range $js := .JavaScripts }}
+        <script src="{{ $js }}" async defer></script>
+        {{ end }}
+        {{ .AdditionalBody }}
+    </body>
+</html>

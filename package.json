@@ -4,15 +4,14 @@
   "description": "A decentralised social media platform.",
   "private": true,
   "scripts": {
-    "bundle:dev": "rimraf public/bundles && NODE_ENV=development webpack",
-    "bundle:prod": "rimraf public/bundles && NODE_ENV=production webpack",
+    "bundle:dev": "NODE_ENV=development webpack && node ./scripts/normaliseManifset.js",
+    "bundle:prod": "NODE_ENV=production webpack && node ./scripts/normaliseManifset.js",
     "start:dev": "yarn run bundle:dev && DEV=true go run ./cmd/spherical",
     "start:prod": "yarn run bundle:prod && DEV=false go run ./cmd/spherical",
     "build": "yarn run bundle:prod && rimraf dist && mkdir dist && node ./scripts/buildBinaries.js"
   },
   "devDependencies": {
     "babel-plugin-styled-components": "^2.0.7",
-    "rimraf": "^3.0.2",
     "ts-loader": "^9.4.1",
     "typescript": "^4.8.4",
     "webpack": "^5.74.0",

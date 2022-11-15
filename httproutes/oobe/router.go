@@ -1,6 +1,7 @@
 package oobe
 
 import (
+	"github.com/jakemakesstuff/spherical/html"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -12,11 +13,14 @@ func Router(dev bool) http.Handler {
 	r := mux.NewRouter()
 
 	r.Path("/").HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-		writer.WriteHeader(http.StatusOK)
-		_, _ = writer.Write([]byte("Hello World!"))
+		http.Redirect(writer, request, "/setup", http.StatusTemporaryRedirect)
 	})
 
-	r.PathPrefix("/").Handler(http.FileServer(public.GetFS(dev)))
+	r.Methods("GET").Path("/setup").HandlerFunc(html.Handler(
+		"Spherical | Setup", "Lets setup your new Spherical node!",
+		true, nil, 200))
+
+	r.PathPrefix("/").Handler(http.FileServer(http.FS(public.GetFS(dev))))
 
 	return r
 }

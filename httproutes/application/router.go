@@ -15,7 +15,7 @@ func Router(dev bool) http.Handler {
 		http.Redirect(writer, req, "/", http.StatusPermanentRedirect)
 	})
 
-	r.PathPrefix("/").Handler(http.FileServer(public.GetFS(dev)))
+	r.PathPrefix("/").Handler(http.FileServer(http.FS(public.GetFS(dev))))
 
 	return r
 }

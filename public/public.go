@@ -5,20 +5,28 @@ package public
 import (
 	"embed"
 	"fmt"
-	"net/http"
+	"io/fs"
 	"os"
+	"sync/atomic"
 )
 
 //go:embed * **/*
 var public embed.FS
 
-func GetFS(dev bool) http.FileSystem {
+var once uintptr
+
+func GetFS(dev bool) fs.FS {
 	if dev {
 		s, err := os.Stat("public")
 		if err == nil && s.IsDir() {
-			return http.FS(os.DirFS("public"))
+			if atomic.SwapUintptr(&once, 1) == 0 {
+				fmt.Println("[public] dev mode enabled - using local fs for public folder!")
+			}
+			return os.DirFS("public")
 		}
-		fmt.Println("[public] public folder is not in cwd - live updates are off!")
+		if atomic.SwapUintptr(&once, 1) == 0 {
+			fmt.Println("[public] public folder is not in cwd - live updates are off!")
+		}
 	}
-	return http.FS(public)
+	return public
 }
