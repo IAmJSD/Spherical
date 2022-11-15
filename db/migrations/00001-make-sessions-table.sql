@@ -3,4 +3,4 @@ CREATE TABLE sessions (
     user_id TEXT NOT NULL
 );
 
-CREATE INDEX sessions_user_id ON sessions (user_id);
+CREATE INDEX sessions_user_id ON sessions (user_id)

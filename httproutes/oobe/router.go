@@ -17,8 +17,8 @@ func Router(dev bool) http.Handler {
 	})
 
 	r.Methods("GET").Path("/setup").HandlerFunc(html.Handler(
-		"Spherical | Setup", "Lets setup your new Spherical node!",
-		true, nil, 200))
+		"Setup", "Lets setup your new Spherical node!", true,
+		nil, 200))
 
 	r.PathPrefix("/").Handler(http.FileServer(http.FS(public.GetFS(dev))))
 

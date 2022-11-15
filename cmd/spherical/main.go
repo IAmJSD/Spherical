@@ -16,6 +16,7 @@ import (
 	"github.com/jakemakesstuff/spherical/db"
 	"github.com/jakemakesstuff/spherical/html"
 	"github.com/jakemakesstuff/spherical/httproutes"
+	"github.com/jakemakesstuff/spherical/scheduler"
 )
 
 func displayVersion() {
@@ -126,6 +127,9 @@ func main() {
 			fmt.Println(logMessage)
 		}
 	}
+
+	// Start the scheduler.
+	scheduler.InitScheduler()
 
 	// Start the listener.
 	fmt.Println("[http] Starting listener on", *listener)
