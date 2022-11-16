@@ -11,6 +11,24 @@ type Structure struct {
 
 	// SchedulerSleepTime is how number of milliseconds the scheduler sleeps for. Defaults to 1000ms.
 	SchedulerSleepTime uint `config:"scheduler_sleep_time"`
+
+	// MailFrom defines the from header for e-mails.
+	MailFrom string `config:"mail_from"`
+
+	// SMTPHost is used to define the SMTP hostname.
+	SMTPHost string `config:"smtp_host"`
+
+	// SMTPPort is used to define the SMTP port.
+	SMTPPort int `config:"smtp_port"`
+
+	// SMTPUsername is used to define the SMTP username. If blank, will use MailFrom.
+	SMTPUsername string `config:"smtp_username"`
+
+	// SMTPPassword is used to define the SMTP password.
+	SMTPPassword string `config:"smtp_password"`
+
+	// SMTPSecure is used to define if SMTP should be secure.
+	SMTPSecure bool `config:"smtp_secure"`
 }
 
 var (
