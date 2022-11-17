@@ -16,6 +16,7 @@ import (
 	"github.com/jakemakesstuff/spherical/db"
 	"github.com/jakemakesstuff/spherical/html"
 	"github.com/jakemakesstuff/spherical/httproutes"
+	"github.com/jakemakesstuff/spherical/i18n"
 	"github.com/jakemakesstuff/spherical/scheduler"
 )
 
@@ -75,6 +76,9 @@ func main() {
 	if *migrationsOnly {
 		return
 	}
+
+	// Setup the i18n engine.
+	i18n.Setup(isDev)
 
 	// Generate or get the PGP key.
 	_, privKeyArmored, err := db.GetPGPKey(func() (pubKey, privKey string) {

@@ -11,6 +11,7 @@ require (
 	github.com/hako/durafmt v0.0.0-20210608085754-5c1018a4e16b
 	github.com/jackc/pgtype v1.12.0
 	github.com/jackc/pgx/v4 v4.17.2
+	github.com/robfig/gettext-go v0.0.0-20141023015941-548cda1a137a
 	github.com/stretchr/testify v1.8.0
 	github.com/valyala/fasthttp v1.40.0
 	github.com/vmihailenco/msgpack/v5 v5.3.5

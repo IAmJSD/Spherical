@@ -1,0 +1,2 @@
+msgid "welcome_title"
+msgstr "Welcome to Spherical!"

@@ -20,6 +20,8 @@ func Router(dev bool) http.Handler {
 		"Setup", "Lets setup your new Spherical node!", true,
 		nil, 200))
 
+	r.Methods("GET", "POST").Path("/install/state").HandlerFunc(installState)
+
 	r.PathPrefix("/").Handler(http.FileServer(http.FS(public.GetFS(dev))))
 
 	return r

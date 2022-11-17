@@ -6,11 +6,14 @@ type Structure struct {
 	// Setup is set to true when the out of box experience is complete.
 	Setup bool `config:"setup"`
 
-	// JobCount is used to define the number of jobs. Defaults to 120.
-	JobCount uint `config:"job_count"`
+	// Locale is used to define the servers default locale. If this is blank, we use the users locale.
+	Locale string `config:"locale"`
 
-	// SchedulerSleepTime is how number of milliseconds the scheduler sleeps for. Defaults to 1000ms.
-	SchedulerSleepTime uint `config:"scheduler_sleep_time"`
+	// Hostname defines the host that this instance is running from.
+	Hostname string `config:"hostname"`
+
+	// HTTPS defines if this is an HTTPS host. This should only be false on dev systems.
+	HTTPS bool `config:"https"`
 
 	// MailFrom defines the from header for e-mails.
 	MailFrom string `config:"mail_from"`
@@ -29,6 +32,12 @@ type Structure struct {
 
 	// SMTPSecure is used to define if SMTP should be secure.
 	SMTPSecure bool `config:"smtp_secure"`
+
+	// JobCount is used to define the number of jobs. Defaults to 120.
+	JobCount uint `config:"job_count"`
+
+	// SchedulerSleepTime is how number of milliseconds the scheduler sleeps for. Defaults to 1000ms.
+	SchedulerSleepTime uint `config:"scheduler_sleep_time"`
 }
 
 var (
