@@ -11,8 +11,9 @@
     "build": "yarn run bundle:prod && rimraf dist && mkdir dist && node ./scripts/buildBinaries.js"
   },
   "devDependencies": {
-    "rimraf": "^3.0.2",
+    "@types/styled-components": "^5.1.26",
     "babel-plugin-styled-components": "^2.0.7",
+    "rimraf": "^3.0.2",
     "ts-loader": "^9.4.1",
     "typescript": "^4.8.4",
     "webpack": "^5.74.0",
@@ -20,6 +21,11 @@
     "webpack-manifest-plugin": "^5.0.0"
   },
   "dependencies": {
-    "preact": "^10.11.2"
+    "preact": "^10.11.2",
+    "styled-components": "^5.3.6"
+  },
+  "alias": {
+    "react": "preact/compat",
+    "react-dom": "preact/compat"
   }
 }

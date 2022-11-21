@@ -1,11 +1,15 @@
 {
   "compilerOptions": {
+    "skipLibCheck": true,
     "noImplicitAny": true,
+    "esModuleInterop": true,
     "module": "es6",
     "target": "es6",
     "jsx": "react",
     "jsxFactory": "h",
+    "jsxFragmentFactory": "Fragment",
     "allowJs": true,
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true
   }
 }
