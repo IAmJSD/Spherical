@@ -9,6 +9,8 @@ import SetupBoolean from "./conponents/oobe/inputs/SetupBoolean";
 import SetupHostname from "./conponents/oobe/inputs/SetupHostname";
 import SetupInput from "./conponents/oobe/inputs/SetupInput";
 import SetupTextbox from "./conponents/oobe/inputs/SetupTextbox";
+import Markdown from "./conponents/shared/Markdown";
+import Button from "./conponents/shared/Button";
 
 type InstallData = {
     image_url: string;
@@ -54,7 +56,7 @@ const Main = () => {
         }
 
         // Make the fetch request.
-        fetch("/install/state", {
+        return fetch("/install/state", {
             method: "POST",
             body: JSON.stringify({
                 type: installData.step,
@@ -120,8 +122,21 @@ const Main = () => {
     });
 
     // Return the layout.
-    return <Layout> // TODO
-
+    return <Layout>
+        <p className="centrist">
+            <img src={installData.image_url} alt={installData.image_alt} />
+        </p>
+        <h1>{installData.title}</h1>
+        <Markdown content={installData.description} unsafe={true} />
+        {components}
+        <hr />
+        <div className="centrist" style={{marginTop: "30px"}}>
+            <p>
+                <Button submit={submit} type="normal" state="clickable">
+                    {installData.next_button}
+                </Button>
+            </p>
+        </div>
     </Layout>;
 };
 

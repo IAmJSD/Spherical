@@ -9,7 +9,8 @@ msgstr "With a few simple steps you will have Spherical setup! You will need the
 "- A S3(-compatible) bucket to store data in. Some examples are [Wasabi](https://wasabi.com/) for large nodes, "
 "and [AWS S3](https://aws.amazon.com/s3/) for smaller nodes.\n"
 "- A mail server to handle outbound mail. We suggest [Mailgun](https://www.mailgun.com/) for this.\n"
-"WHen you have the above, please enter your install key."
+"- Access to your servers console.\n\n"
+"When you have the above, please enter your installation key."
 
 msgid "install_key_name"
 msgstr "Installation Key"
