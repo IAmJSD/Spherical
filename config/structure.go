@@ -38,6 +38,24 @@ type Structure struct {
 
 	// SchedulerSleepTime is how number of milliseconds the scheduler sleeps for. Defaults to 1000ms.
 	SchedulerSleepTime uint `config:"scheduler_sleep_time"`
+
+	// S3AccessKeyID is used to define an access key ID.
+	S3AccessKeyID string `config:"s3_access_key_id"`
+
+	// S3SecretAccessKey is used to define a secret access key.
+	S3SecretAccessKey string `json:"s3_secret_access_key"`
+
+	// S3Bucket is used to define the S3 bucket.
+	S3Bucket string `json:"s3_bucket"`
+
+	// S3Endpoint is used to define the S3 endpoint.
+	S3Endpoint string `json:"s3_endpoint"`
+
+	// S3Hostname is used to define the hostname of S3 uploads.
+	S3Hostname string `json:"s3_hostname"`
+
+	// S3Region is used to define the S3 region.
+	S3Region string `json:"s3_region"`
 }
 
 var (

@@ -1,6 +1,7 @@
 package oobe
 
 import (
+	"context"
 	"crypto/subtle"
 	"encoding/json"
 	"io"
@@ -22,6 +23,9 @@ const (
 	// setupTypeInput is used to define a small input box.
 	setupTypeInput setupType = "input"
 
+	// setupTypeSecret is used to define a password box.
+	setupTypeSecret setupType = "secret"
+
 	// setupTypeTextbox is used to define a large textbox.
 	setupTypeTextbox setupType = "textbox"
 
@@ -30,6 +34,9 @@ const (
 )
 
 type setupOption struct {
+	// ID is used to define the ID of the option.
+	ID string `json:"id"`
+
 	// Type defines the type of the setup option.
 	Type setupType `json:"type"`
 
@@ -40,7 +47,7 @@ type setupOption struct {
 	Description string `json:"description"`
 
 	// Sticky is an option that should persist across the remainder.
-	Sticky string `json:"sticky"`
+	Sticky bool `json:"sticky"`
 
 	// MustSecure is used with the hostname structure to determine if the option has to
 	// be within a secure context to succeed.
@@ -48,11 +55,17 @@ type setupOption struct {
 
 	// Regexp is used for text inputs to validate the contents before they hit the server.
 	Regexp *string `json:"regexp,omitempty"`
+
+	// Required is used to define if the option is required.
+	Required bool `json:"required"`
 }
 
 type installData struct {
 	// ImageURL is the image that should be displayed on the page.
 	ImageURL string `json:"image_url"`
+
+	// ImageAlt is the image alt text that should be displayed on the page.
+	ImageAlt string `json:"image_alt"`
 
 	// Title is the title within the currently set language.
 	Title string `json:"title"`
@@ -77,14 +90,17 @@ type installStage struct {
 	// ImageURL is the image that should be displayed on the page.
 	ImageURL string
 
-	// Title is the used to define the i18n string for the title.
+	// ImageAlt is used to define the i18n string for the image alt.
+	ImageAlt string
+
+	// Title is used to define the i18n string for the title.
 	Title string
 
 	// Description is used to define the i18n string for the description.
 	Description string
 
 	// Options is used to define the options contained within the current page.
-	// Title and Description should be the i18n string.
+	// All text elements should be the i18n string.
 	Options []setupOption
 
 	// NextButton is used to define the i18n string for next.
@@ -94,7 +110,7 @@ type installStage struct {
 	Pass func() bool
 
 	// Run defines the runner for the options. If string is blank, the next thing is ran.
-	Run func(map[string]json.RawMessage) string
+	Run func(context.Context, map[string]json.RawMessage) string
 }
 
 func (i installStage) render(r *http.Request) installData {
@@ -106,6 +122,7 @@ func (i installStage) render(r *http.Request) installData {
 	}
 	return installData{
 		ImageURL:    i.ImageURL,
+		ImageAlt:    i18n.GetWithRequest(r, i.ImageAlt),
 		Title:       i18n.GetWithRequest(r, i.Title),
 		Description: i18n.GetWithRequest(r, i.Description),
 		Step:        i.Step,
@@ -115,14 +132,14 @@ func (i installStage) render(r *http.Request) installData {
 }
 
 var (
-	stages        = []installStage{}
+	stages        = []func(bool) installStage{}
 	stagesIndexes = map[string]int{}
 )
 
-func addStages(localStages ...installStage) {
+func addStages(localStages ...func(bool) installStage) {
 	for _, v := range localStages {
 		stages = append(stages, v)
-		stagesIndexes[v.Step] = len(stages) - 1
+		stagesIndexes[v(false).Step] = len(stages) - 1
 	}
 }
 
@@ -147,15 +164,17 @@ const hundredkb = 100000
 
 func installState(w http.ResponseWriter, r *http.Request) {
 	// Check if this is a GET request. If it is, render stage 0.
+	isDev := r.Context().Value("dev").(bool)
 	if r.Method == "GET" {
-		sendJson(w, stages[0].render(r), 200)
+		sendJson(w, stages[0](isDev).render(r), 200)
 		return
 	}
 
 	// Parse the body.
 	b, err := io.ReadAll(io.LimitReader(r.Body, hundredkb))
 	if err != nil {
-		sendJson(w, messageData{Message: "Failed to read body."}, 400)
+		sendJson(w, messageData{Message: i18n.GetWithRequest(
+			r, "httproutes/oobe/state:body_read_fail")}, 400)
 		return
 	}
 
@@ -174,16 +193,19 @@ func installState(w http.ResponseWriter, r *http.Request) {
 		_ = json.Unmarshal(b, &setupKey)
 	}
 	if setupKey == "" {
-		sendJson(w, messageData{Message: "Failed to get setup key from body."}, 400)
+		sendJson(w, messageData{Message: i18n.GetWithRequest(
+			r, "httproutes/oobe/state:setup_key_nonexistent")}, 400)
 		return
 	}
 	dbSetupKey, err := db.SetupKey(r.Context())
 	if err != nil {
-		sendJson(w, messageData{Message: "Failed to get setup key from DB."}, 400)
+		sendJson(w, messageData{Message: i18n.GetWithRequest(
+			r, "httproutes/oobe/state:setup_key_db")}, 400)
 		return
 	}
 	if subtle.ConstantTimeCompare([]byte(setupKey), []byte(dbSetupKey)) != 1 {
-		sendJson(w, messageData{Message: "Setup keys are not equal."}, 400)
+		sendJson(w, messageData{Message: i18n.GetWithRequest(
+			r, "httproutes/oobe/state:setup_keys_unequal")}, 400)
 		return
 	}
 
@@ -192,23 +214,25 @@ func installState(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		// Specified type does not exist.
 		sendJson(
-			w, messageData{Message: "Type of event does not exist. Try refreshing."},
+			w, messageData{Message: i18n.GetWithRequest(
+				r, "httproutes/oobe/state:event_nonexistent")},
 			400)
 		return
 	}
-	stg := stages[index]
+	stg := stages[index](isDev)
 
 	// Run the function.
-	msg := stg.Run(body.Body)
+	msg := stg.Run(r.Context(), body.Body)
 	if msg != "" {
 		// Error.
-		sendJson(w, messageData{Message: msg}, 400)
+		sendJson(w, messageData{Message: i18n.GetWithRequest(r, msg)}, 400)
 		return
 	}
 
 	// Find the next option.
-	for _, opt := range stages[index+1:] {
+	for _, optFactory := range stages[index+1:] {
 		// See if this option is done.
+		opt := optFactory(isDev)
 		done := opt.Pass()
 		if !done {
 			// Serve this option.
@@ -221,7 +245,8 @@ func installState(w http.ResponseWriter, r *http.Request) {
 	err = db.UpdateConfig(r.Context(), "setup", true)
 	if msg != "" {
 		// DB write error.
-		sendJson(w, messageData{Message: "Failed to write that we are setup to the config."}, 400)
+		sendJson(w, messageData{Message: i18n.GetWithRequest(
+			r, "httproutes/oobe/state:setup_write_fail")}, 400)
 		return
 	}
 	http.Redirect(w, r, "/", http.StatusPermanentRedirect)

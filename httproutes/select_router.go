@@ -1,6 +1,7 @@
 package httproutes
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/jakemakesstuff/spherical/config"
@@ -13,6 +14,7 @@ func SelectRouter(dev bool) http.Handler {
 	appRouter := application.Router(dev)
 	oobeRouter := oobe.Router(dev)
 	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		request = request.WithContext(context.WithValue(request.Context(), "dev", dev))
 		if config.Config().Setup {
 			// Use the main router.
 			appRouter.ServeHTTP(writer, request)

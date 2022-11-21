@@ -1,2 +1,97 @@
+msgid "wave"
+msgstr "Waving hand"
+
 msgid "welcome_title"
 msgstr "Welcome to Spherical!"
+
+msgid "welcome_description"
+msgstr "With a few simple steps you will have Spherical setup! You will need the following:\n"
+"- A S3(-compatible) bucket to store data in. Some examples are [Wasabi](https://wasabi.com/) for large nodes, "
+"and [AWS S3](https://aws.amazon.com/s3/) for smaller nodes.\n"
+"- A mail server to handle outbound mail. We suggest [Mailgun](https://www.mailgun.com/) for this.\n"
+"WHen you have the above, please enter your install key."
+
+msgid "install_key_name"
+msgstr "Installation Key"
+
+msgid "install_key_description"
+msgstr "You will find this within the console of your server."
+
+msgid "setup_next"
+msgstr "Start Setup"
+
+msgid "cloud_alt"
+msgstr "Picture of cloud"
+
+msgid "s3_title"
+msgstr "S3 Configuration"
+
+msgid "s3_description"
+msgstr "This is the part of the setup where you configure your S3 compatible provider."
+
+msgid "access_key_id_name"
+msgstr "Access Key ID"
+
+msgid "access_key_id_description"
+msgstr "The access key ID you wish to use."
+
+msgid "secret_access_key_name"
+msgstr "Secret Access Key"
+
+msgid "secret_access_key_description"
+msgstr "The secret access key you wish to use."
+
+msgid "test_s3_configuration"
+msgstr "Test S3 Configuration"
+
+msgid "update_config_fail"
+msgstr "Failed to update config."
+
+msgid "s3_bucket_name"
+msgstr "S3 Bucket"
+
+msgid "s3_bucket_description"
+msgstr "Defines the name of the S3 bucket you wish to use."
+
+msgid "s3_endpoint_name"
+msgstr "S3 Endpoint"
+
+msgid "s3_endpoint_description"
+msgstr "Defines the S3 endpoint used in this configuration."
+
+msgid "s3_hostname_name"
+msgstr "S3 Hostname"
+
+msgid "s3_hostname_description"
+msgstr "Defines the hostname where the bucket can be accessed. If this is "
+"not present, it will default to a concatenation of the endpoint and bucket."
+
+msgid "s3_upload_fail"
+msgstr "Failed to upload to S3."
+
+msgid "resulting_url_parse_fail"
+msgstr "Failed to parse resulting URL."
+
+msgid "s3_http_get_failed"
+msgstr "Failed to get the result of the S3 upload."
+
+msgid "s3_delete_failed"
+msgstr "Failed to delete created file from S3."
+
+msgid "s3_region_name"
+msgstr "S3 Region"
+
+msgid "s3_region_description"
+msgstr "Defines the S3 region."
+
+msgid "done_tick"
+msgstr "Green tick"
+
+msgid "done_title"
+msgstr "All done!"
+
+msgid "done_description"
+msgstr "Click the button below to write the install into the database and complete it."
+
+msgid "complete_installation"
+msgstr "Complete Installation"

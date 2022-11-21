@@ -1,0 +1,17 @@
+msgid "body_read_fail"
+msgstr "Failed to read body."
+
+msgid "setup_key_nonexistent"
+msgstr "Failed to get setup key from body."
+
+msgid "setup_key_db"
+msgstr "Failed to get setup key from DB."
+
+msgid "setup_keys_unequal"
+msgstr "Setup keys are not equal."
+
+msgid "event_nonexistent"
+msgstr "Type of event does not exist. Try refreshing."
+
+msgid "setup_write_fail"
+msgstr "Failed to write that we are setup to the config."
