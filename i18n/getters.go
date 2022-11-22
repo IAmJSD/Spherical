@@ -1,15 +1,15 @@
 package i18n
 
 import (
+	"container/list"
+	"io/fs"
 	"net/http"
 	"strings"
 
 	"github.com/jakemakesstuff/spherical/config"
 )
 
-// GetWithRequest is used to get an i18n string with the http request.
-func GetWithRequest(r *http.Request, s string) string {
-	// Get the locale string.
+func getLocale(r *http.Request) string {
 	var locale string
 	for _, v := range r.Cookies() {
 		if v.Name == "spherical_language_override" {
@@ -30,7 +30,82 @@ func GetWithRequest(r *http.Request, s string) string {
 			}
 		}
 	}
+	return locale
+}
 
-	// Call the internationalisation function.
+// GetWithRequest is used to get an i18n string with the http request.
+func GetWithRequest(r *http.Request, s string) string {
+	locale := getLocale(r)
 	return parseLocaleString(s, locale)
+}
+
+func recursivePos(f fs.FS, fp string, l *list.List) []string {
+	start := l == nil
+	if start {
+		l = list.New()
+	}
+	file, err := f.Open(fp)
+	if err == nil {
+		s, err := file.Stat()
+		if err == nil {
+			if s.IsDir() {
+				// List all files in this folder.
+				dirs, _ := fs.ReadDir(f, fp)
+				for _, v := range dirs {
+					recursivePos(f, fp+"/"+v.Name(), l)
+				}
+			} else {
+				// Tag this one along.
+				l.PushBack(fp)
+			}
+		}
+	}
+
+	if start {
+		s := make([]string, l.Len())
+		i := 0
+		for x := l.Front(); x != nil; x = x.Next() {
+			s[i] = x.Value.(string)
+			i++
+		}
+		return s
+	}
+	return nil
+}
+
+// GetAllFrontend is used to get all frontend PO strings.
+func GetAllFrontend(r *http.Request) map[string]string {
+	// Get the filesystem.
+	var f fs.FS
+	if localsOverride == nil {
+		f = locales
+	} else {
+		f = localsOverride
+	}
+
+	// Go through each locale to get the keys mapped to values.
+	langMapping := map[string]string{}
+	locales := []string{validateLocale(getLocale(r))}
+	if locales[0] != "en_US" {
+		locales = append(locales, "en_US")
+	}
+	for _, locale := range locales {
+		matches := recursivePos(f, "locales/"+locale+"/frontend", nil)
+		for _, fp := range matches {
+			// Load the PO file.
+			poFile := cachedPoGet(fp)
+
+			// Go through each phrase in there.
+			for _, message := range poFile.Messages {
+				frag := strings.SplitN(fp, "/", 3)[2]
+				key := frag[:len(frag)-3] + ":" + message.MsgId
+				if _, ok := langMapping[key]; !ok {
+					langMapping[key] = message.MsgStr
+				}
+			}
+		}
+	}
+
+	// Return all the phrases.
+	return langMapping
 }

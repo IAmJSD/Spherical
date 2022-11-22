@@ -1,11 +1,11 @@
 package oobe
 
 import (
-	"github.com/jakemakesstuff/spherical/html"
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/jakemakesstuff/spherical/public"
+	"github.com/jakemakesstuff/spherical/html"
+	"github.com/jakemakesstuff/spherical/httproutes/shared"
 )
 
 // Router is used to return this packages router.
@@ -22,7 +22,7 @@ func Router(dev bool) http.Handler {
 
 	r.Methods("GET", "POST").Path("/install/state").HandlerFunc(installState)
 
-	r.PathPrefix("/").Handler(http.FileServer(http.FS(public.GetFS(dev))))
+	shared.Router(r, dev)
 
 	return r
 }

@@ -1,6 +1,6 @@
 import { h, render } from "preact";
 import { useState, useEffect } from "preact/hooks";
-import { SetupOption, SetupType } from "./types/oobe";
+import { POError, SetupOption, SetupType } from "./types/oobe";
 import fetch from "./helpers/redirectingFetch";
 import CallbackManager from "./helpers/CallbackManager";
 import Layout from "./conponents/oobe/Layout";
@@ -11,6 +11,9 @@ import SetupInput from "./conponents/oobe/inputs/SetupInput";
 import SetupTextbox from "./conponents/oobe/inputs/SetupTextbox";
 import Markdown from "./conponents/shared/Markdown";
 import Button from "./conponents/shared/Button";
+import Localise from "./conponents/shared/Localise";
+import Notification from "./conponents/shared/Notification";
+import LocalisedAltText from "./conponents/shared/LocalisedAltText";
 
 type InstallData = {
     image_url: string;
@@ -36,7 +39,7 @@ const Main = () => {
     }, []);
 
     // Defines the error message.
-    const [errorMessage, setErrorMessage] = useState("");
+    const [error, setError] = useState<string | POError>("");
 
     // Handle the submit button.
     const submit = () => {
@@ -45,7 +48,8 @@ const Main = () => {
         try {
             values = validatorCallbacks.runAll();
         } catch (e) {
-            setErrorMessage(e.message);
+            if (e instanceof POError) setError(e);
+            else setError(e.message);
             return;
         }
 
@@ -69,13 +73,13 @@ const Main = () => {
             if (x.status === 400) {
                 // Set the message to this.
                 const j = await x.json();
-                setErrorMessage(j.message);
+                setError(j.message);
                 return;
             }
 
             if (x.ok) {
                 // Set the error message blank.
-                setErrorMessage("");
+                setError("");
                 setInstallData(await x.json());
                 return;
             }
@@ -89,8 +93,17 @@ const Main = () => {
     if (installData === undefined) return <Loading />;
 
     // If null, return a error.
-    if (installData === null) return <Layout> // TODO: i18n
-
+    if (installData === null) return <Layout>
+        <p className="centrist">
+            <LocalisedAltText
+                i18nKey="frontend/oobe:cross_image"
+                imageUrl="/png/cross.png"
+            />
+        </p>
+        <h1><Localise i18nKey="frontend/oobe:failed_title" /></h1>
+        <p className="centrist">
+            <Localise i18nKey="frontend/oobe:failed_description" />
+        </p>
     </Layout>;
 
     // Map the objects.
@@ -121,6 +134,9 @@ const Main = () => {
         }
     });
 
+    // Figure out the component to show in the error box.
+    const errorChild = error instanceof POError ? <Localise i18nKey={error.message} /> : error;
+
     // Return the layout.
     return <Layout>
         <p className="centrist">
@@ -130,6 +146,13 @@ const Main = () => {
         <Markdown content={installData.description} unsafe={true} />
         {components}
         <hr />
+        {
+            error === "" ? null : <div className="centrist" style={{marginTop: "30px"}}>
+                <Notification type="danger">
+                    {errorChild}
+                </Notification>
+            </div>
+        }
         <div className="centrist" style={{marginTop: "30px"}}>
             <p>
                 <Button submit={submit} type="normal" state="clickable">

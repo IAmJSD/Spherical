@@ -1,0 +1,2 @@
+msgid "no_blank"
+msgstr "Input cannot be blank."

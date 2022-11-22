@@ -16,3 +16,5 @@ export type SetupOption = {
     regexp?: string;
     required: boolean;
 };
+
+export class POError extends Error {}

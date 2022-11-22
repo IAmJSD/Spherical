@@ -22,6 +22,7 @@
     "webpack-manifest-plugin": "^5.0.0"
   },
   "dependencies": {
+    "@msgpack/msgpack": "^2.8.0",
     "markdown-it": "^13.0.1",
     "preact": "^10.11.2",
     "styled-components": "^5.3.6"

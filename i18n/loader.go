@@ -175,7 +175,7 @@ func Setup(dev bool) {
 			if atomic.SwapUintptr(&once, 1) == 0 {
 				fmt.Println("[i18n] dev mode enabled - using local fs for locales folder!")
 			}
-			localsOverride = os.DirFS("public")
+			localsOverride = os.DirFS("i18n")
 			return
 		}
 		if atomic.SwapUintptr(&once, 1) == 0 {

@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/jakemakesstuff/spherical/public"
+	"github.com/jakemakesstuff/spherical/httproutes/shared"
 )
 
 // Router is used to return this packages router.
@@ -15,7 +15,7 @@ func Router(dev bool) http.Handler {
 		http.Redirect(writer, req, "/", http.StatusPermanentRedirect)
 	})
 
-	r.PathPrefix("/").Handler(http.FileServer(http.FS(public.GetFS(dev))))
+	shared.Router(r, dev)
 
 	return r
 }

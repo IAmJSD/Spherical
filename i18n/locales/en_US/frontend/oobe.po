@@ -1,0 +1,8 @@
+msgid "cross_image"
+msgstr "Crossed out error"
+
+msgid "failed_title"
+msgstr "Failed to complete installation."
+
+msgid "failed_description"
+msgstr "Failed to communicate with the server. Please refresh and try again, or check your connection."
