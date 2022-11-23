@@ -20,7 +20,6 @@ func boolPtr(x bool) *bool {
 }
 
 func welcome(dev bool) installStage {
-	// TODO: handle hostname
 	return installStage{
 		Step:        "welcome",
 		ImageURL:    "/png/wave.png",
@@ -37,6 +36,12 @@ func welcome(dev bool) installStage {
 				Required:    true,
 				MustSecure:  boolPtr(dev),
 			},
+			{
+				ID:       "hostname",
+				Type:     setupTypeHostname,
+				Name:     "httproutes/oobe/steps:hostname",
+				Required: true,
+			},
 		},
 		NextButton: "httproutes/oobe/steps:setup_next",
 		Pass: func() bool {
@@ -45,7 +50,7 @@ func welcome(dev bool) installStage {
 		},
 		Run: func(ctx context.Context, m map[string]json.RawMessage) string {
 			// Special case: We have already validated the setup key in the main
-			// handler. Just let this one through.
+			// handler. Just get the hostname information.
 			return ""
 		},
 	}

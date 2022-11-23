@@ -1,0 +1,13 @@
+msgid "please_https"
+msgstr "Please load this setup over HTTPS."
+
+msgid "ssl_okay"
+msgstr "This host is successfully running over HTTPS. Note that you cannot change the hostname after installation, "
+"so please make sure this is the right domain!"
+
+msgid "ssl_error"
+msgstr "This host is not running over HTTPS and is not in development mode. Please fix your web server configuration so "
+"that this application is exclusively served with HTTPS."
+
+msgid "ssl_warning"
+msgstr "This application is not running over HTTPS but development mode is on. Setup may still proceed."

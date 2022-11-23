@@ -96,3 +96,6 @@ msgstr "Click the button below to write the install into the database and comple
 
 msgid "complete_installation"
 msgstr "Complete Installation"
+
+msgid "hostname"
+msgstr "Hostname"

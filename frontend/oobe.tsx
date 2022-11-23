@@ -152,7 +152,7 @@ const Main = () => {
         <hr />
         {
             error === "" ? null : <div className="centrist" style={{marginTop: "30px"}}>
-                <Notification type="danger">
+                <Notification type="danger" centered={true}>
                     {errorChild}
                 </Notification>
             </div>
