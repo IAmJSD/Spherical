@@ -2,6 +2,7 @@ import styled from "styled-components";
 import { h, ComponentChildren } from "preact";
 import { useState } from "preact/hooks";
 import { HTMLAttributes } from "preact/compat";
+import actuallyFinally from "../../helpers/actuallyFinally";
 
 type ButtonType = "normal" | "danger";
 type PropState = "clickable" | "disabled";
@@ -55,7 +56,7 @@ export default (props: Props) => {
     const [state, setState] = useState<PropState | "loading">(props.state);
     const submit = () => {
         setState("loading");
-        props.submit().finally(() => setState("clickable"));
+        actuallyFinally(props.submit, () => setState("clickable"));
     };
     const additional: HTMLAttributes<HTMLLinkElement> = {};
     if (state === "clickable") additional.onClick = submit;

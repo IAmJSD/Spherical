@@ -55,7 +55,6 @@ export default (props: Props) => {
             res = res.replace("{" + key + "}", props.values[key]);
         }
     }
-    console.log(res);
 
     // If the markdown options does not exist, return it as a fragment here.
     if (!props.markdownOptions) return <>{res}</>;

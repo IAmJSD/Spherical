@@ -3,6 +3,7 @@ import { useState, useEffect } from "preact/hooks";
 import { POError, SetupOption, SetupType } from "./types/oobe";
 import fetch from "./helpers/redirectingFetch";
 import CallbackManager from "./helpers/CallbackManager";
+import { loadStickies } from "./helpers/oobe/stickyManager";
 import Layout from "./conponents/oobe/Layout";
 import Loading from "./conponents/shared/Loading";
 import SetupBoolean from "./conponents/oobe/inputs/SetupBoolean";
@@ -54,10 +55,11 @@ const Main = () => {
         }
 
         // Make a object.
-        const o: any = {};
+        let o: any = {};
         for (const val of values) {
             for (const key of Object.keys(val)) o[key] = val[key];
         }
+        o = Object.assign(loadStickies(), o);
 
         // Make the fetch request.
         return fetch("/install/state", {

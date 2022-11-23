@@ -1,2 +1,5 @@
-msgid "no_blank"
-msgstr "Input cannot be blank."
+msgid "input_required"
+msgstr "A required input box is missing."
+
+msgid "input_invalid"
+msgstr "A input box has invalid content."
