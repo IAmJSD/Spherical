@@ -10,12 +10,12 @@ msgstr "With a few simple steps you will have Spherical setup! You will need the
 "and [AWS S3](https://aws.amazon.com/s3/) for smaller nodes.\n"
 "- A mail server to handle outbound mail. We suggest [Mailgun](https://www.mailgun.com/) for this.\n"
 "- Access to your servers console.\n\n"
-"When you have the above, please enter your installation key."
+"When you have the above, please enter your setup key."
 
-msgid "install_key_name"
-msgstr "Installation Key"
+msgid "setup_key_name"
+msgstr "Setup Key"
 
-msgid "install_key_description"
+msgid "setup_key_description"
 msgstr "You will find this within the console of your server."
 
 msgid "setup_next"

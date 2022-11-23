@@ -29,10 +29,10 @@ func welcome(dev bool) installStage {
 		Description: "httproutes/oobe/steps:welcome_description",
 		Options: []setupOption{
 			{
-				ID:          "install_key",
+				ID:          "setup_key",
 				Type:        setupTypeInput,
-				Name:        "httproutes/oobe/steps:install_key_name",
-				Description: "httproutes/oobe/steps:install_key_description",
+				Name:        "httproutes/oobe/steps:setup_key_name",
+				Description: "httproutes/oobe/steps:setup_key_description",
 				Sticky:      true,
 				Required:    true,
 				MustSecure:  boolPtr(dev),
