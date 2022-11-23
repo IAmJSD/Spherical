@@ -19,6 +19,11 @@ func boolPtr(x bool) *bool {
 	return &x
 }
 
+type hostname struct {
+	Protocol string `json:"protocol"`
+	Hostname string `json:"hostname"`
+}
+
 func welcome(dev bool) installStage {
 	return installStage{
 		Step:        "welcome",
@@ -49,8 +54,25 @@ func welcome(dev bool) installStage {
 			return true
 		},
 		Run: func(ctx context.Context, m map[string]json.RawMessage) string {
-			// Special case: We have already validated the setup key in the main
-			// handler. Just get the hostname information.
+			var h hostname
+			b, ok := m["hostname"]
+			if ok {
+				err := json.Unmarshal(b, &h)
+				if err != nil {
+					ok = false
+				}
+			}
+			if !ok {
+				return "httproutes/oobe/steps:no_hostname"
+			}
+			err := db.UpdateConfig(ctx, "https", h.Protocol != "http")
+			if err != nil {
+				return "httproutes/oobe/steps:update_config_fail"
+			}
+			err = db.UpdateConfig(ctx, "hostname", h.Hostname)
+			if err != nil {
+				return "httproutes/oobe/steps:update_config_fail"
+			}
 			return ""
 		},
 	}

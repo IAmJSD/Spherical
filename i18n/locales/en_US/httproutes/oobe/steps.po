@@ -99,3 +99,6 @@ msgstr "Complete Installation"
 
 msgid "hostname"
 msgstr "Hostname"
+
+msgid "no_hostname"
+msgstr "Unable to find hostname or decode the JSON for it."
