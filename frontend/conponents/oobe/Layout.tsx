@@ -5,6 +5,7 @@ export default styled.div`
     font-family: 'Roboto Regular', Arial, Helvetica, sans-serif;
     width: 70%;
     margin: auto;
+    margin-bottom: 40px;
 
     h1, .centrist {
         text-align: center;

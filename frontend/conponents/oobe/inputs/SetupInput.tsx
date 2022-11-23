@@ -22,7 +22,7 @@ export default (props: Props) => {
     useEffect(() => {
         const callbackId = props.cbManager.new(() => {
             // Get the text content.
-            let textContent = ref.current!.value;
+            let textContent = ref.current!.value.trim();
             if (textContent === "") {
                 // Handle blank fields.
                 if (props.option.required) throw new POError(

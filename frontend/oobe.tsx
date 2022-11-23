@@ -1,3 +1,5 @@
+import "preact/devtools";
+
 import { h, render } from "preact";
 import { useState, useEffect } from "preact/hooks";
 import { POError, SetupOption, SetupType } from "./types/oobe";
@@ -113,24 +115,24 @@ const Main = () => {
         switch (x.type) {
             case SetupType.BOOLEAN:
                 return <SetupBoolean
-                    key={i} option={x} cbManager={validatorCallbacks}
+                    key={`${i}_${x.id}`} option={x} cbManager={validatorCallbacks}
                 />;
             case SetupType.HOSTNAME:
                 return <SetupHostname
-                    key={i} option={x} cbManager={validatorCallbacks}
+                    key={`${i}_${x.id}`} option={x} cbManager={validatorCallbacks}
                 />;
             case SetupType.INPUT:
                 return <SetupInput
-                    key={i} option={x} cbManager={validatorCallbacks}
+                    key={`${i}_${x.id}`} option={x} cbManager={validatorCallbacks}
                     secret={false}
                 />;
             case SetupType.SECRET:
                 return <SetupInput
-                    key={i} option={x} cbManager={validatorCallbacks}
+                    key={`${i}_${x.id}`} option={x} cbManager={validatorCallbacks}
                     secret={true}
                 />;
             case SetupType.TEXTBOX:
-                return <SetupTextbox key={i} option={x} cbManager={validatorCallbacks} />;
+                return <SetupTextbox key={`${i}_${x.id}`} option={x} cbManager={validatorCallbacks} />;
             default:
                 throw new Error("Input type not implemented.");
         }
