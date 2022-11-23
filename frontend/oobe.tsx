@@ -6,17 +6,17 @@ import { POError, SetupOption, SetupType } from "./types/oobe";
 import fetch from "./helpers/redirectingFetch";
 import CallbackManager from "./helpers/CallbackManager";
 import { loadStickies } from "./helpers/oobe/stickyManager";
-import Layout from "./conponents/oobe/Layout";
-import Loading from "./conponents/shared/Loading";
-import SetupBoolean from "./conponents/oobe/inputs/SetupBoolean";
-import SetupHostname from "./conponents/oobe/inputs/SetupHostname";
-import SetupInput from "./conponents/oobe/inputs/SetupInput";
-import SetupTextbox from "./conponents/oobe/inputs/SetupTextbox";
-import Markdown from "./conponents/shared/Markdown";
-import Button from "./conponents/shared/Button";
-import Localise from "./conponents/shared/Localise";
-import Notification from "./conponents/shared/Notification";
-import LocalisedAltText from "./conponents/shared/LocalisedAltText";
+import Layout from "./components/oobe/Layout";
+import Loading from "./components/shared/Loading";
+import SetupBoolean from "./components/oobe/inputs/SetupBoolean";
+import SetupHostname from "./components/oobe/inputs/SetupHostname";
+import SetupInput from "./components/oobe/inputs/SetupInput";
+import SetupTextbox from "./components/oobe/inputs/SetupTextbox";
+import Markdown from "./components/shared/Markdown";
+import Button from "./components/shared/Button";
+import Localise from "./components/shared/Localise";
+import Notification from "./components/shared/Notification";
+import LocalisedAltText from "./components/shared/LocalisedAltText";
 
 type InstallData = {
     image_url: string;

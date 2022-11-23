@@ -1,7 +1,8 @@
 import { h, Fragment } from "preact";
+import { useEffect, useState } from "preact/hooks";
 import CallbackManager from "../../../helpers/CallbackManager";
 import { SetupOption } from "../../../types/oobe";
-import { useEffect, useState } from "preact/hooks";
+import Notification from "../../shared/Notification";
 
 type Props = {
     option: SetupOption;
