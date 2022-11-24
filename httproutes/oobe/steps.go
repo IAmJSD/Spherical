@@ -240,18 +240,18 @@ func done(_ bool) installStage {
 	return installStage{
 		Step:        "done",
 		ImageURL:    "/png/tick.png",
-		ImageAlt:    "httproutes/oobe/state:done_tick",
-		Title:       "httproutes/oobe/state:done_title",
-		Description: "httproutes/oobe/state:done_description",
+		ImageAlt:    "httproutes/oobe/steps:done_tick",
+		Title:       "httproutes/oobe/steps:done_title",
+		Description: "httproutes/oobe/steps:done_description",
 		Options:     []setupOption{},
-		NextButton:  "httproutes/oobe/state:complete_installation",
+		NextButton:  "httproutes/oobe/steps:complete_installation",
 		Pass: func() bool {
 			return config.Config().Setup
 		},
 		Run: func(ctx context.Context, _ map[string]json.RawMessage) string {
 			err := db.UpdateConfig(ctx, "setup", true)
 			if err != nil {
-				return "httproutes/oobe/state:update_config_fail"
+				return "httproutes/oobe/steps:update_config_fail"
 			}
 			return ""
 		},

@@ -46,7 +46,7 @@ func Upload(ctx context.Context, path string, r io.Reader, contentLength int64, 
 		endpoint = "https://" + endpoint
 	}
 	secure := strings.HasPrefix(endpoint, "https://")
-	cli, err := minio.New(endpoint, &minio.Options{
+	cli, err := minio.New(strings.SplitN(endpoint, "://", 2)[1], &minio.Options{
 		Creds:  credentials.NewStaticV4(c.S3AccessKeyID, c.S3SecretAccessKey, ""),
 		Secure: secure,
 		Region: c.S3Region,
@@ -74,7 +74,7 @@ func Upload(ctx context.Context, path string, r io.Reader, contentLength int64, 
 	}
 
 	// Handle endpoint and bucket concats.
-	return urlConcat(c.S3Hostname, urlFrag{
+	return urlConcat(c.S3Endpoint, urlFrag{
 		encode: true,
 		part:   c.S3Bucket,
 	}, urlFrag{
@@ -91,7 +91,7 @@ func Delete(ctx context.Context, path string) error {
 		endpoint = "https://" + endpoint
 	}
 	secure := strings.HasPrefix(endpoint, "https://")
-	cli, err := minio.New(endpoint, &minio.Options{
+	cli, err := minio.New(strings.SplitN(endpoint, "://", 2)[1], &minio.Options{
 		Creds:  credentials.NewStaticV4(c.S3AccessKeyID, c.S3SecretAccessKey, ""),
 		Secure: secure,
 		Region: c.S3Region,

@@ -60,7 +60,7 @@ type Structure struct {
 
 var (
 	configVar     Structure
-	configVarLock = sync.RWMutex{}
+	configVarLock sync.RWMutex
 )
 
 // Config is used to return the current configuration.
