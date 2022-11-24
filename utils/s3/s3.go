@@ -41,8 +41,12 @@ func urlConcat(start string, parts ...urlFrag) string {
 func Upload(ctx context.Context, path string, r io.Reader, contentLength int64, contentType, contentDisposition, acl string) (string, error) {
 	// Do the upload.
 	c := config.Config()
-	secure := strings.HasPrefix(c.S3Endpoint, "https://")
-	cli, err := minio.New(c.S3Endpoint, &minio.Options{
+	endpoint := c.S3Endpoint
+	if !strings.HasPrefix(endpoint, "http://") && !strings.HasPrefix(endpoint, "https://") {
+		endpoint = "https://" + endpoint
+	}
+	secure := strings.HasPrefix(endpoint, "https://")
+	cli, err := minio.New(endpoint, &minio.Options{
 		Creds:  credentials.NewStaticV4(c.S3AccessKeyID, c.S3SecretAccessKey, ""),
 		Secure: secure,
 		Region: c.S3Region,
@@ -82,8 +86,12 @@ func Upload(ctx context.Context, path string, r io.Reader, contentLength int64, 
 // Delete is used to delete a file at a path.
 func Delete(ctx context.Context, path string) error {
 	c := config.Config()
-	secure := strings.HasPrefix(c.S3Endpoint, "https://")
-	cli, err := minio.New(c.S3Endpoint, &minio.Options{
+	endpoint := c.S3Endpoint
+	if !strings.HasPrefix(endpoint, "http://") && !strings.HasPrefix(endpoint, "https://") {
+		endpoint = "https://" + endpoint
+	}
+	secure := strings.HasPrefix(endpoint, "https://")
+	cli, err := minio.New(endpoint, &minio.Options{
 		Creds:  credentials.NewStaticV4(c.S3AccessKeyID, c.S3SecretAccessKey, ""),
 		Secure: secure,
 		Region: c.S3Region,
