@@ -126,8 +126,8 @@ func parseLocaleString(s string, preferredLocale string) string {
 	// Split the string by the colon.
 	split := strings.SplitN(s, ":", 2)
 	if len(split) != 2 {
-		// Locale string is badly formatted.
-		return "!! INVALID LOCALE STRING - NO OR TOO MANY COLONS !!"
+		// Locale string is badly formatted. Assume it is not one.
+		return s
 	}
 
 	// Split by the slash into parts and make sure that each part is valid.

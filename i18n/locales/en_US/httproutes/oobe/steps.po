@@ -175,6 +175,15 @@ msgstr "Sign-ups Enabled"
 msgid "sign_ups_enabled_description"
 msgstr "Defines if sign-ups are enabled within this server."
 
+msgid "locale_name"
+msgstr "Server Locale"
+
+msgid "locale_description"
+msgstr "Defines the locale of the server."
+
+msgid "system_locale"
+msgstr "System Locale"
+
 msgid "save_server_info"
 msgstr "Save Server Info"
 

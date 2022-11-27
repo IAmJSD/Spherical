@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jakemakesstuff/spherical/config"
 	"github.com/jakemakesstuff/spherical/db"
+	"github.com/jakemakesstuff/spherical/i18n"
 	"github.com/jakemakesstuff/spherical/jobs"
 	"github.com/jakemakesstuff/spherical/utils/s3"
 )
@@ -366,6 +367,19 @@ func email(_ bool) installStage {
 }
 
 func serverInfo(_ bool) installStage {
+	locales := []dropdownItem{
+		{
+			Name:  "httproutes/oobe/steps:system_locale",
+			Value: "",
+		},
+	}
+	for _, v := range i18n.GetLocales() {
+		locales = append(locales, dropdownItem{
+			Name:  v.Name,
+			Value: v.Code,
+		})
+	}
+
 	return installStage{
 		Step:        "server_info",
 		ImageURL:    "/png/cog.png",
@@ -405,6 +419,15 @@ func serverInfo(_ bool) installStage {
 				Sticky:      false,
 				Required:    true,
 			},
+			{
+				ID:          "locale",
+				Type:        setupTypeDropdown,
+				Name:        "httproutes/oobe/steps:locale_name",
+				Description: "httproutes/oobe/steps:locale_description",
+				Sticky:      false,
+				Required:    true,
+				ListItems:   locales,
+			},
 		},
 		NextButton: "httproutes/oobe/steps:save_server_info",
 		Pass: func() bool {
@@ -414,6 +437,7 @@ func serverInfo(_ bool) installStage {
 			allowed := map[string]func() any{
 				"server_name":        func() any { return "" },
 				"server_description": func() any { return "" },
+				"locale":             func() any { return "" },
 				"server_public":      func() any { return false },
 				"sign_ups_enabled":   func() any { return false },
 			}

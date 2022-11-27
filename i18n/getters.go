@@ -7,6 +7,8 @@ import (
 	"strings"
 
 	"github.com/jakemakesstuff/spherical/config"
+	"golang.org/x/text/language"
+	"golang.org/x/text/language/display"
 )
 
 func getLocale(r *http.Request) string {
@@ -108,4 +110,43 @@ func GetAllFrontend(r *http.Request) map[string]string {
 
 	// Return all the phrases.
 	return langMapping
+}
+
+// Locale is used to define a locale.
+type Locale struct {
+	Code string `json:"code"`
+	Name string `json:"name"`
+}
+
+// GetLocales is used to get all the supported i18n locales and their names in their
+// respective languages.
+func GetLocales() []Locale {
+	// Get the filesystem.
+	var f fs.FS
+	if localsOverride == nil {
+		f = locales
+	} else {
+		f = localsOverride
+	}
+
+	// Look for the folders within locales.
+	e, _ := fs.ReadDir(f, "locales")
+	if e != nil {
+		// Get all possible locale folders.
+		k := make([]Locale, 0, len(e))
+		for _, v := range e {
+			if v.IsDir() {
+				localeName := v.Name()
+				t, err := language.Parse(localeName)
+				if err == nil {
+					k = append(k, Locale{
+						Code: localeName,
+						Name: display.Self.Name(t),
+					})
+				}
+			}
+		}
+		return k
+	}
+	return []Locale{}
 }

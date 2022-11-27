@@ -5,6 +5,7 @@ export enum SetupType {
     NUMBER = "number",
     TEXTBOX = "textbox",
     BOOLEAN = "boolean",
+    DROPDOWN = "dropdown",
 }
 
 export type SetupOption = {
@@ -16,6 +17,7 @@ export type SetupOption = {
     must_secure?: boolean;
     regexp?: string;
     required: boolean;
+    list_items: {name: string; value: string}[];
 };
 
 export class POError extends Error {}

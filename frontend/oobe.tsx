@@ -17,6 +17,7 @@ import Localise from "./components/shared/Localise";
 import Notification from "./components/shared/Notification";
 import LocalisedAltText from "./components/shared/LocalisedAltText";
 import asyncComponent from "./helpers/asyncComponent";
+import SetupDropdown from "./components/oobe/inputs/SetupDropdown";
 
 const Markdown = asyncComponent(() => import("./components/shared/Markdown"));
 
@@ -140,6 +141,8 @@ const Main = () => {
                 />;
             case SetupType.TEXTBOX:
                 return <SetupTextbox key={`${i}_${x.id}`} option={x} cbManager={validatorCallbacks} />;
+            case SetupType.DROPDOWN:
+                return <SetupDropdown key={`${i}_${x.id}`} option={x} cbManager={validatorCallbacks} />;
             default:
                 throw new Error("Input type not implemented.");
         }

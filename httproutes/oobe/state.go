@@ -34,7 +34,15 @@ const (
 
 	// setupTypeBoolean is used to define a boolean within the setup.
 	setupTypeBoolean setupType = "boolean"
+
+	// setupTypeDropdown is used to define a dropdown box.
+	setupTypeDropdown setupType = "dropdown"
 )
+
+type dropdownItem struct {
+	Name  string `json:"name"`
+	Value string `json:"value"`
+}
 
 type setupOption struct {
 	// ID is used to define the ID of the option.
@@ -58,6 +66,9 @@ type setupOption struct {
 
 	// Regexp is used for text inputs to validate the contents before they hit the server.
 	Regexp *string `json:"regexp,omitempty"`
+
+	// ListItems defines the items to display if the type is a dropdown.
+	ListItems []dropdownItem `json:"list_items,omitempty"`
 
 	// Required is used to define if the option is required.
 	Required bool `json:"required"`
@@ -121,6 +132,15 @@ func (i installStage) render(r *http.Request) installData {
 	for i, v := range i.Options {
 		v.Name = i18n.GetWithRequest(r, v.Name)
 		v.Description = i18n.GetWithRequest(r, v.Description)
+		if v.ListItems != nil {
+			a := make([]dropdownItem, len(v.ListItems))
+			copy(a, v.ListItems)
+			for i, v := range a {
+				v.Name = i18n.GetWithRequest(r, v.Name)
+				a[i] = v
+			}
+			v.ListItems = a
+		}
 		opts[i] = v
 	}
 	return installData{
