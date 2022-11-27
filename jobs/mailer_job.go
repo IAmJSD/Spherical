@@ -16,6 +16,9 @@ type MailEvent struct {
 var MailerJob = scheduler.NewJob("mailer_job", func(_ context.Context, ev MailEvent) error {
 	m := gomail.NewMessage()
 	c := config.Config()
+	if c.MailFrom == "" {
+		c.MailFrom = c.SMTPUsername
+	}
 	m.SetHeader("From", c.MailFrom)
 	m.SetHeader("To", ev.To)
 	m.SetHeader("Subject", ev.Subject)

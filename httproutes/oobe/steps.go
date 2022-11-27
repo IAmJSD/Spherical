@@ -305,35 +305,39 @@ func email(_ bool) installStage {
 		Run: func(ctx context.Context, m map[string]json.RawMessage) string {
 			// Handle defaulting the SMTP port.
 			x, ok := m["smtp_port"]
-			if !ok || bytes.Equal(x, []byte("0")) {
+			if !ok || bytes.Equal(x, []byte("0")) || bytes.Equal(x, []byte("null")) {
 				m["smtp_port"] = []byte("25")
 			}
 
 			// Handle writing to the database.
-			allowed := []string{
-				"mail_from", "smtp_host", "smtp_port", "smtp_username", "smtp_password",
-				"smtp_secure",
+			allowed := map[string]func() any{
+				"mail_from":     func() any { return "" },
+				"smtp_host":     func() any { return "" },
+				"smtp_port":     func() any { return 0 },
+				"smtp_username": func() any { return "" },
+				"smtp_password": func() any { return "" },
+				"smtp_secure":   func() any { return false },
 			}
 			for k, v := range m {
-				// Get the value as a string.
-				var s string
-				err := json.Unmarshal(v, &s)
-				if err != nil {
-					continue
-				}
-
 				// Check if the key is allowed.
-				included := false
-				for _, v := range allowed {
+				var includedFactory func() any
+				for v, factory := range allowed {
 					if v == k {
-						included = true
+						includedFactory = factory
 						break
 					}
 				}
 
-				if included {
+				if includedFactory != nil {
+					// Get the value as the factory specified.
+					r := includedFactory()
+					err := json.Unmarshal(v, &r)
+					if err != nil {
+						continue
+					}
+
 					// Write to the database.
-					err := db.UpdateConfig(ctx, k, s)
+					err = db.UpdateConfig(ctx, k, r)
 					if err != nil {
 						return "httproutes/oobe/steps:update_config_fail"
 					}
