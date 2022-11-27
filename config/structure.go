@@ -6,9 +6,6 @@ type Structure struct {
 	// Setup is set to true when the out of box experience is complete.
 	Setup bool `config:"setup"`
 
-	// Locale is used to define the servers default locale. If this is blank, we use the users locale.
-	Locale string `config:"locale"`
-
 	// Hostname defines the host that this instance is running from.
 	Hostname string `config:"hostname"`
 
@@ -33,12 +30,6 @@ type Structure struct {
 	// SMTPSecure is used to define if SMTP should be secure.
 	SMTPSecure bool `config:"smtp_secure"`
 
-	// JobCount is used to define the number of jobs. Defaults to 120.
-	JobCount uint `config:"job_count"`
-
-	// SchedulerSleepTime is how number of milliseconds the scheduler sleeps for. Defaults to 1000ms.
-	SchedulerSleepTime uint `config:"scheduler_sleep_time"`
-
 	// S3AccessKeyID is used to define an access key ID.
 	S3AccessKeyID string `config:"s3_access_key_id"`
 
@@ -56,6 +47,27 @@ type Structure struct {
 
 	// S3Region is used to define the S3 region.
 	S3Region string `config:"s3_region"`
+
+	// ServerName is used to define the name of Spherical server.
+	ServerName string `config:"server_name"`
+
+	// ServerDescription is used to define the description of the Spherical server.
+	ServerDescription string `config:"server_description"`
+
+	// ServerPublic defines if guilds or members within a server are public.
+	ServerPublic bool `config:"server_public"`
+
+	// SignUpsEnabled is used to define if this server is accepting sign ups.
+	SignUpsEnabled bool `config:"sign_ups_enabled"`
+
+	// Locale is used to define the servers default locale. If this is blank, we use the users locale.
+	Locale string `config:"locale"`
+
+	// JobCount is used to define the number of jobs. Defaults to 120.
+	JobCount uint `config:"job_count"`
+
+	// SchedulerSleepTime is how number of milliseconds the scheduler sleeps for. Defaults to 1000ms.
+	SchedulerSleepTime uint `config:"scheduler_sleep_time"`
 }
 
 var (

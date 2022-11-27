@@ -365,6 +365,88 @@ func email(_ bool) installStage {
 	}
 }
 
+func serverInfo(_ bool) installStage {
+	return installStage{
+		Step:        "server_info",
+		ImageURL:    "/png/cog.png",
+		ImageAlt:    "httproutes/oobe/steps:cog",
+		Title:       "httproutes/oobe/steps:server_info_title",
+		Description: "httproutes/oobe/steps:server_info_description",
+		Options: []setupOption{
+			{
+				ID:          "server_name",
+				Type:        setupTypeInput,
+				Name:        "httproutes/oobe/steps:server_name_name",
+				Description: "httproutes/oobe/steps:server_name_description",
+				Sticky:      false,
+				Required:    true,
+			},
+			{
+				ID:          "server_description",
+				Type:        setupTypeTextbox,
+				Name:        "httproutes/oobe/steps:server_description_name",
+				Description: "httproutes/oobe/steps:server_description_description",
+				Sticky:      false,
+				Required:    true,
+			},
+			{
+				ID:          "server_public",
+				Type:        setupTypeBoolean,
+				Name:        "httproutes/oobe/steps:server_public_name",
+				Description: "httproutes/oobe/steps:server_public_description",
+				Sticky:      false,
+				Required:    true,
+			},
+			{
+				ID:          "sign_ups_enabled",
+				Type:        setupTypeBoolean,
+				Name:        "httproutes/oobe/steps:sign_ups_enabled_name",
+				Description: "httproutes/oobe/steps:sign_ups_enabled_description",
+				Sticky:      false,
+				Required:    true,
+			},
+		},
+		NextButton: "httproutes/oobe/steps:save_server_info",
+		Pass: func() bool {
+			return config.Config().ServerName != ""
+		},
+		Run: func(ctx context.Context, m map[string]json.RawMessage) string {
+			allowed := map[string]func() any{
+				"server_name":        func() any { return "" },
+				"server_description": func() any { return "" },
+				"server_public":      func() any { return false },
+				"sign_ups_enabled":   func() any { return false },
+			}
+			for k, v := range m {
+				// Check if the key is allowed.
+				var includedFactory func() any
+				for v, factory := range allowed {
+					if v == k {
+						includedFactory = factory
+						break
+					}
+				}
+
+				if includedFactory != nil {
+					// Get the value as the factory specified.
+					r := includedFactory()
+					err := json.Unmarshal(v, &r)
+					if err != nil {
+						continue
+					}
+
+					// Write to the database.
+					err = db.UpdateConfig(ctx, k, r)
+					if err != nil {
+						return "httproutes/oobe/steps:update_config_fail"
+					}
+				}
+			}
+			return ""
+		},
+	}
+}
+
 func done(_ bool) installStage {
 	return installStage{
 		Step:        "done",
@@ -389,6 +471,6 @@ func done(_ bool) installStage {
 
 func init() {
 	addStages(
-		welcome, s3Conf, email, //serverInfo, ownerUser, hashValidators, // TODO
+		welcome, s3Conf, email, serverInfo, //ownerUser, hashValidators, // TODO
 		done)
 }

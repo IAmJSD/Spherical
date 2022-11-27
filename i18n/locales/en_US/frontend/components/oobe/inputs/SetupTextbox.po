@@ -1,0 +1,5 @@
+msgid "input_required"
+msgstr "A required textbox is missing."
+
+msgid "input_invalid"
+msgstr "A textbox has invalid content."

@@ -142,6 +142,42 @@ msgstr "Failed to send e-mail with the current configuration."
 msgid "test_email_configuration"
 msgstr "Test E-mail Configuration"
 
+msgid "cog"
+msgstr "Picture of cog"
+
+msgid "server_info_title"
+msgstr "Server Information"
+
+msgid "server_info_description"
+msgstr "Here you will configure information about your Spherical server."
+
+msgid "server_name_name"
+msgstr "Server Name"
+
+msgid "server_name_description"
+msgstr "Defines the name of the Spherical server."
+
+msgid "server_description_name"
+msgstr "Server Description"
+
+msgid "server_description_description"
+msgstr "Defines the public server description. This should be in markdown."
+
+msgid "server_public_name"
+msgstr "Public Server"
+
+msgid "server_public_description"
+msgstr "Defines if guilds or members within a server are public."
+
+msgid "sign_ups_enabled_name"
+msgstr "Sign-ups Enabled"
+
+msgid "sign_ups_enabled_description"
+msgstr "Defines if sign-ups are enabled within this server."
+
+msgid "save_server_info"
+msgstr "Save Server Info"
+
 msgid "done_tick"
 msgstr "Green tick"
 
