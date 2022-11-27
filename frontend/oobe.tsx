@@ -12,11 +12,13 @@ import SetupBoolean from "./components/oobe/inputs/SetupBoolean";
 import SetupHostname from "./components/oobe/inputs/SetupHostname";
 import SetupInput from "./components/oobe/inputs/SetupInput";
 import SetupTextbox from "./components/oobe/inputs/SetupTextbox";
-import Markdown from "./components/shared/Markdown";
 import Button from "./components/shared/Button";
 import Localise from "./components/shared/Localise";
 import Notification from "./components/shared/Notification";
 import LocalisedAltText from "./components/shared/LocalisedAltText";
+import asyncComponent from "./helpers/asyncComponent";
+
+const Markdown = asyncComponent(() => import("./components/shared/Markdown"));
 
 type InstallData = {
     image_url: string;

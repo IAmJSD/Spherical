@@ -2,7 +2,9 @@ import { h, Fragment } from "preact";
 import { useEffect, useState } from "preact/hooks";
 import { decode } from "@msgpack/msgpack";
 import CallbackManager from "../../helpers/CallbackManager";
-import Markdown from "./Markdown";
+import asyncComponent from "../../helpers/asyncComponent";
+
+const Markdown = asyncComponent(() => import("./Markdown"));
 
 // Start a loop up to keep trying to fetch the localisation strings. We generally
 // shouldn't do stuff like this in the codebase, but this cannot fail for long
