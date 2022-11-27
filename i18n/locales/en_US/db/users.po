@@ -1,0 +1,14 @@
+msgid "invalid_password"
+msgstr "Password is not valid."
+
+msgid "invalid_username"
+msgstr "Username is not valid."
+
+msgid "invalid_email"
+msgstr "E-mail address is not valid."
+
+msgid "user_or_email_used"
+msgstr "The username or e-mail address has already been used."
+
+msgid "insert_fail"
+msgstr "Failed to insert the user into the database."

@@ -14,6 +14,7 @@ import (
 	"github.com/jakemakesstuff/spherical/db"
 	"github.com/jakemakesstuff/spherical/i18n"
 	"github.com/jakemakesstuff/spherical/jobs"
+	"github.com/jakemakesstuff/spherical/utils/regexes"
 	"github.com/jakemakesstuff/spherical/utils/s3"
 )
 
@@ -471,6 +472,81 @@ func serverInfo(_ bool) installStage {
 	}
 }
 
+func strPtr(s string) *string { return &s }
+
+func ownerUser(_ bool) installStage {
+	return installStage{
+		Step:        "owner_user",
+		ImageURL:    "/png/person.png",
+		ImageAlt:    "httproutes/oobe/steps:person",
+		Title:       "httproutes/oobe/steps:owner_user_title",
+		Description: "httproutes/oobe/steps:owner_user_description",
+		Options: []setupOption{
+			{
+				ID:          "email",
+				Type:        setupTypeInput,
+				Name:        "httproutes/oobe/steps:email_name",
+				Description: "httproutes/oobe/steps:user_email_description",
+				Sticky:      false,
+				Required:    true,
+				Regexp:      strPtr(regexes.Email.String()),
+			},
+			{
+				ID:          "username",
+				Type:        setupTypeInput,
+				Name:        "httproutes/oobe/steps:username_name",
+				Description: "httproutes/oobe/steps:username_description",
+				Sticky:      false,
+				Required:    true,
+				Regexp:      strPtr(regexes.Username.String()),
+			},
+			{
+				ID:          "password",
+				Type:        setupTypeSecret,
+				Name:        "httproutes/oobe/steps:password_name",
+				Description: "httproutes/oobe/steps:password_description",
+				Sticky:      false,
+				Required:    true,
+				Regexp:      strPtr(regexes.Password.String()),
+			},
+		},
+		NextButton: "httproutes/oobe/steps:create_account",
+		Pass: func() bool {
+			ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+			defer cancel()
+			return db.HasOwner(ctx)
+		},
+		Run: func(ctx context.Context, m map[string]json.RawMessage) string {
+			var email string
+			var username string
+			var password string
+			if err := json.Unmarshal(m["email"], &email); err != nil {
+				return "httproutes/oobe/steps:invalid_email"
+			}
+			if err := json.Unmarshal(m["username"], &username); err != nil {
+				return "httproutes/oobe/steps:invalid_username"
+			}
+			if err := json.Unmarshal(m["password"], &password); err != nil {
+				return "httproutes/oobe/steps:invalid_password"
+			}
+			_, err := db.CreatePasswordUser(ctx, db.UserPasswordCreateOpts{
+				Username:  username,
+				Email:     email,
+				Password:  password,
+				Confirmed: true,
+				Flags:     db.UserFlagOwner,
+			})
+			if err != nil {
+				if x, ok := err.(db.CreatePasswordUserError); ok {
+					return x.POValue()
+				}
+				return "httproutes/oobe/steps:update_config_fail"
+			}
+			return ""
+		},
+	}
+}
+
 func done(_ bool) installStage {
 	return installStage{
 		Step:        "done",
@@ -495,6 +571,6 @@ func done(_ bool) installStage {
 
 func init() {
 	addStages(
-		welcome, s3Conf, email, serverInfo, //ownerUser, hashValidators, // TODO
+		welcome, s3Conf, email, serverInfo, ownerUser, //hashValidators, // TODO
 		done)
 }

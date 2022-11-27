@@ -4,6 +4,7 @@ go 1.19
 
 require (
 	github.com/ProtonMail/gopenpgp/v2 v2.4.10
+	github.com/bwmarrin/snowflake v0.3.0
 	github.com/common-nighthawk/go-figure v0.0.0-20210622060536-734e95fb86be
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/google/uuid v1.3.0
@@ -11,12 +12,15 @@ require (
 	github.com/hako/durafmt v0.0.0-20210608085754-5c1018a4e16b
 	github.com/jackc/pgtype v1.12.0
 	github.com/jackc/pgx/v4 v4.17.2
+	github.com/leemcloughlin/gofarmhash v0.0.0-20160919192320-0a055c5b87a8
 	github.com/minio/minio-go/v7 v7.0.44
 	github.com/robfig/gettext-go v0.0.0-20141023015941-548cda1a137a
 	github.com/stretchr/testify v1.8.0
 	github.com/valyala/fasthttp v1.40.0
 	github.com/vmihailenco/msgpack/v5 v5.3.5
 	go.etcd.io/bbolt v1.3.6
+	golang.org/x/crypto v0.0.0-20220722155217-630584e8d5aa
+	golang.org/x/text v0.3.7
 	gopkg.in/mail.v2 v2.3.1
 )
 
@@ -49,10 +53,8 @@ require (
 	github.com/sirupsen/logrus v1.9.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
-	golang.org/x/crypto v0.0.0-20220722155217-630584e8d5aa // indirect
 	golang.org/x/net v0.0.0-20220722155237-a158d28d115b // indirect
 	golang.org/x/sys v0.0.0-20220722155257-8c9f86f7a55f // indirect
-	golang.org/x/text v0.3.7 // indirect
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	gopkg.in/ini.v1 v1.66.6 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect

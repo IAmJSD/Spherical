@@ -22,7 +22,7 @@ msgid "setup_next"
 msgstr "Start Setup"
 
 msgid "cloud_alt"
-msgstr "Picture of cloud"
+msgstr "Cloud"
 
 msgid "s3_title"
 msgstr "S3 Configuration"
@@ -143,7 +143,7 @@ msgid "test_email_configuration"
 msgstr "Test E-mail Configuration"
 
 msgid "cog"
-msgstr "Picture of cog"
+msgstr "Cog"
 
 msgid "server_info_title"
 msgstr "Server Information"
@@ -186,6 +186,45 @@ msgstr "System Locale"
 
 msgid "save_server_info"
 msgstr "Save Server Info"
+
+msgid "person"
+msgstr "Person"
+
+msgid "owner_user_title"
+msgstr "Owner User"
+
+msgid "owner_user_description"
+msgstr "On this page, you will set up the owner user account for your Spherical instance."
+
+msgid "email_name"
+msgstr "E-mail Address"
+
+msgid "user_email_description"
+msgstr "The e-mail address for the user you wish to create."
+
+msgid "username_name"
+msgstr "Username"
+
+msgid "username_description"
+msgstr "The username for the user you wish to create."
+
+msgid "password_name"
+msgstr "Password"
+
+msgid "password_description"
+msgstr "The password of the user you wish to create."
+
+msgid "create_account"
+msgstr "Create Account"
+
+msgid "invalid_email"
+msgstr "THe e-mail in the request body was incorrect."
+
+msgid "invalid_username"
+msgstr "THe username in the request body was incorrect."
+
+msgid "invalid_password"
+msgstr "THe password in the request body was incorrect."
 
 msgid "done_tick"
 msgstr "Green tick"
