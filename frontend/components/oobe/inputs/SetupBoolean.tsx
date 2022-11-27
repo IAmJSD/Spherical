@@ -30,7 +30,7 @@ export default (props: Props) => {
         <hr />
         <Container flexDirection="row">
             <Item>
-                <div style={{padding: "25px"}}>
+                <div style={{padding: "25px", paddingLeft: "0"}}>
                     <BigCheck type="checkbox" ref={ref} />
                 </div>
             </Item>

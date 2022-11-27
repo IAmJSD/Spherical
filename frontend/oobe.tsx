@@ -124,12 +124,17 @@ const Main = () => {
             case SetupType.INPUT:
                 return <SetupInput
                     key={`${i}_${x.id}`} option={x} cbManager={validatorCallbacks}
-                    secret={false}
+                    type="text"
                 />;
             case SetupType.SECRET:
                 return <SetupInput
                     key={`${i}_${x.id}`} option={x} cbManager={validatorCallbacks}
-                    secret={true}
+                    type="password"
+                />;
+            case SetupType.NUMBER:
+                return <SetupInput
+                    key={`${i}_${x.id}`} option={x} cbManager={validatorCallbacks}
+                    type="number"
                 />;
             case SetupType.TEXTBOX:
                 return <SetupTextbox key={`${i}_${x.id}`} option={x} cbManager={validatorCallbacks} />;

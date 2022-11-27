@@ -85,6 +85,63 @@ msgstr "S3 Region"
 msgid "s3_region_description"
 msgstr "Defines the S3 region."
 
+msgid "mailbox"
+msgstr "Mailbox"
+
+msgid "email_title"
+msgstr "E-mail Configuration"
+
+msgid "email_description"
+msgstr "On this page, you can configure your outbound e-mail server to use it with Spherical."
+
+msgid "mail_from_name"
+msgstr "Mail From"
+
+msgid "mail_from_description"
+msgstr "The e-mail address to email from. If blank, defaults to the username."
+
+msgid "smtp_host_name"
+msgstr "SMTP Host"
+
+msgid "smtp_host_description"
+msgstr "The hostname for the SMTP server."
+
+msgid "smtp_port_name"
+msgstr "SMTP Port"
+
+msgid "smtp_port_description"
+msgstr "The port for the SMTP server. If blank, defaults to port 25."
+
+msgid "smtp_username_name"
+msgstr "SMTP Username"
+
+msgid "smtp_username_description"
+msgstr "The username for the SMTP server."
+
+msgid "smtp_password_name"
+msgstr "SMTP Password"
+
+msgid "smtp_password_description"
+msgstr "The password for the SMTP server."
+
+msgid "smtp_secure_name"
+msgstr "Securely connect to the SMTP server"
+
+msgid "smtp_secure_description"
+msgstr "Attempt an encrypted connection to the mail server."
+
+msgid "mail_to_name"
+msgstr "Mail To Address (Strongly Suggested)"
+
+msgid "mail_to_description"
+msgstr "Defines the email to send a test email to. If this is blank, no test e-mail will be sent."
+
+msgid "email_send_fail"
+msgstr "Failed to send e-mail with the current configuration."
+
+msgid "test_email_configuration"
+msgstr "Test E-mail Configuration"
+
 msgid "done_tick"
 msgstr "Green tick"
 

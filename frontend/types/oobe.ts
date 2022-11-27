@@ -2,6 +2,7 @@ export enum SetupType {
     HOSTNAME = "hostname",
     INPUT = "input",
     SECRET = "secret",
+    NUMBER = "number",
     TEXTBOX = "textbox",
     BOOLEAN = "boolean",
 }

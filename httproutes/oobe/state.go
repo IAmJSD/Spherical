@@ -26,6 +26,9 @@ const (
 	// setupTypeSecret is used to define a password box.
 	setupTypeSecret setupType = "secret"
 
+	// setupTypeNumber is used to define a number box.
+	setupTypeNumber setupType = "number"
+
 	// setupTypeTextbox is used to define a large textbox.
 	setupTypeTextbox setupType = "textbox"
 

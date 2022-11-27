@@ -13,7 +13,7 @@ const StyledInput = styled.input`
 type Props = {
     option: SetupOption;
     cbManager: CallbackManager<{[key: string]: any}>;
-    secret: boolean;
+    type: "password" | "text" | "number";
 };
 
 export default (props: Props) => {
@@ -22,7 +22,7 @@ export default (props: Props) => {
     useEffect(() => {
         const callbackId = props.cbManager.new(() => {
             // Get the text content.
-            let textContent = ref.current!.value.trim();
+            let textContent: string | number | undefined = ref.current!.value.trim();
             if (textContent === "") {
                 // Handle blank fields.
                 if (props.option.required) throw new POError(
@@ -38,6 +38,7 @@ export default (props: Props) => {
             }
 
             // Return the result.
+            if (props.option.type === "number") textContent = Number(textContent);
             const res = {[props.option.id]: textContent};
             if (props.option.sticky) setStickies(res);
             return res;
@@ -51,7 +52,7 @@ export default (props: Props) => {
         <h3>{props.option.name}</h3>
         <p>{props.option.description}</p>
         <StyledInput
-            type={props.secret ? "password" : "text"} ref={ref}
+            type={props.type} ref={ref}
             placeholder={props.option.name} />
         <br /><br />
     </>;

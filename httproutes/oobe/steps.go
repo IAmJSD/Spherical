@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jakemakesstuff/spherical/config"
 	"github.com/jakemakesstuff/spherical/db"
+	"github.com/jakemakesstuff/spherical/jobs"
 	"github.com/jakemakesstuff/spherical/utils/s3"
 )
 
@@ -145,7 +146,6 @@ func s3Conf(_ bool) installStage {
 				"s3_access_key_id", "s3_secret_access_key", "s3_bucket", "s3_endpoint",
 				"s3_hostname", "s3_region",
 			}
-			requiredCount := 0
 			for k, v := range m {
 				// Get the value as a string.
 				var s string
@@ -164,9 +164,6 @@ func s3Conf(_ bool) installStage {
 				}
 
 				if included {
-					// Add 1 to the required count.
-					requiredCount++
-
 					// Write to the database.
 					err := db.UpdateConfig(ctx, k, s)
 					if err != nil {
@@ -236,6 +233,134 @@ func s3Conf(_ bool) installStage {
 	}
 }
 
+func email(_ bool) installStage {
+	return installStage{
+		Step:        "email",
+		ImageURL:    "/png/mailbox.png",
+		ImageAlt:    "httproutes/oobe/steps:mailbox",
+		Title:       "httproutes/oobe/steps:email_title",
+		Description: "httproutes/oobe/steps:email_description",
+		Options: []setupOption{
+			{
+				ID:          "mail_from",
+				Type:        setupTypeInput,
+				Name:        "httproutes/oobe/steps:mail_from_name",
+				Description: "httproutes/oobe/steps:mail_from_description",
+				Sticky:      false,
+				Required:    false,
+			},
+			{
+				ID:          "smtp_host",
+				Type:        setupTypeInput,
+				Name:        "httproutes/oobe/steps:smtp_host_name",
+				Description: "httproutes/oobe/steps:smtp_host_description",
+				Sticky:      false,
+				Required:    true,
+			},
+			{
+				ID:          "smtp_port",
+				Type:        setupTypeNumber,
+				Name:        "httproutes/oobe/steps:smtp_port_name",
+				Description: "httproutes/oobe/steps:smtp_port_description",
+				Sticky:      false,
+				Required:    false,
+			},
+			{
+				ID:          "smtp_username",
+				Type:        setupTypeInput,
+				Name:        "httproutes/oobe/steps:smtp_username_name",
+				Description: "httproutes/oobe/steps:smtp_username_description",
+				Sticky:      false,
+				Required:    true,
+			},
+			{
+				ID:          "smtp_password",
+				Type:        setupTypeSecret,
+				Name:        "httproutes/oobe/steps:smtp_password_name",
+				Description: "httproutes/oobe/steps:smtp_password_description",
+				Sticky:      false,
+				Required:    true,
+			},
+			{
+				ID:          "mail_to",
+				Type:        setupTypeInput,
+				Name:        "httproutes/oobe/steps:mail_to_name",
+				Description: "httproutes/oobe/steps:mail_to_description",
+				Sticky:      false,
+				Required:    true,
+			},
+			{
+				ID:          "smtp_secure",
+				Type:        setupTypeBoolean,
+				Name:        "httproutes/oobe/steps:smtp_secure_name",
+				Description: "httproutes/oobe/steps:smtp_secure_description",
+				Sticky:      false,
+				Required:    true,
+			},
+		},
+		NextButton: "httproutes/oobe/steps:test_email_configuration",
+		Pass: func() bool {
+			return config.Config().SMTPHost != ""
+		},
+		Run: func(ctx context.Context, m map[string]json.RawMessage) string {
+			// Handle defaulting the SMTP port.
+			x, ok := m["smtp_port"]
+			if !ok || bytes.Equal(x, []byte("0")) {
+				m["smtp_port"] = []byte("25")
+			}
+
+			// Handle writing to the database.
+			allowed := []string{
+				"mail_from", "smtp_host", "smtp_port", "smtp_username", "smtp_password",
+				"smtp_secure",
+			}
+			for k, v := range m {
+				// Get the value as a string.
+				var s string
+				err := json.Unmarshal(v, &s)
+				if err != nil {
+					continue
+				}
+
+				// Check if the key is allowed.
+				included := false
+				for _, v := range allowed {
+					if v == k {
+						included = true
+						break
+					}
+				}
+
+				if included {
+					// Write to the database.
+					err := db.UpdateConfig(ctx, k, s)
+					if err != nil {
+						return "httproutes/oobe/steps:update_config_fail"
+					}
+				}
+			}
+
+			// Handle sending mail.
+			var mailTo string
+			_ = json.Unmarshal(m["mail_to"], &mailTo)
+			if mailTo != "" {
+				err := jobs.MailerJob.RunAndBlock(ctx, jobs.MailEvent{
+					To:          mailTo,
+					Subject:     "E-mail Sending Test",
+					ContentHTML: "<p>This is a test of sending mail with Spherical.</p>",
+				})
+				if err != nil {
+					_ = db.UpdateConfig(ctx, "smtp_host", "")
+					return "httproutes/oobe/steps:email_send_fail"
+				}
+			}
+
+			// No errors!
+			return ""
+		},
+	}
+}
+
 func done(_ bool) installStage {
 	return installStage{
 		Step:        "done",
@@ -260,7 +385,6 @@ func done(_ bool) installStage {
 
 func init() {
 	addStages(
-		welcome, s3Conf,
-		//email, serverInfo, ownerUser, hashValidators, // TODO
+		welcome, s3Conf, email, //serverInfo, ownerUser, hashValidators, // TODO
 		done)
 }

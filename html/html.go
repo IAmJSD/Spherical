@@ -175,6 +175,7 @@ func Handler(
 		}
 
 		// Get the public URL.
+		// TODO: This is wrong because proxies.
 		u := *r.URL
 		u.RawPath = "/"
 		u.Path = "/"
