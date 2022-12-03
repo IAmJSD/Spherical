@@ -119,6 +119,8 @@ RUN go mod download
 
 COPY . .
 RUN yarn run bundle:prod
+ARG ENABLE_CGO=1
+ENV CGO_ENABLED=$ENABLE_CGO
 RUN go build -o bin ./cmd/spherical
 
 FROM alpine:3.14
