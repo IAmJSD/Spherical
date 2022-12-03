@@ -1,0 +1,47 @@
+version: "3.9"
+
+volumes:
+  postgres: {}
+
+services:
+  postgres:
+    image: postgres:15.1
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    volumes:
+      - postgres:/var/lib/postgresql/data
+      - ./test_seed.sql:/docker-entrypoint-initdb.d/test_seed.sql
+
+  wait-for-postgres:
+    image: postgres:15.1
+    command: ["sh", "-c", "while ! pg_isready -h postgres -U postgres -p 5432; do sleep 1; done"]
+    depends_on:
+      - postgres
+
+  redis:
+    image: bitnami/redis:7.0.5
+    restart: always
+    environment:
+      ALLOW_EMPTY_PASSWORD: "yes"
+      REDIS_AOF_ENABLED: "no"
+
+  wait-for-redis:
+    image: bitnami/redis:7.0.5
+    command: ["sh", "-c", "while ! redis-cli -h redis ping; do sleep 1; done"]
+    depends_on:
+      - redis
+
+  app:
+    image: "spherical_integration"
+    depends_on:
+      - wait-for-postgres
+      - wait-for-redis
+    volumes:
+      - ./test-results:/app/test-results
+      - ./playwright:/app/playwright
+      - ./playwright-report:/app/playwright-report
+    environment:
+      - CI

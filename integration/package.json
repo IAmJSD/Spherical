@@ -1,0 +1,14 @@
+{
+  "name": "integration",
+  "private": true,
+  "dependencies": {
+    "playwright": "^1.28.1"
+  },
+  "scripts": {
+    "browsers:get": "playwright install",
+    "start": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.28.1"
+  }
+}
