@@ -218,13 +218,13 @@ msgid "create_account"
 msgstr "Create Account"
 
 msgid "invalid_email"
-msgstr "THe e-mail in the request body was incorrect."
+msgstr "The e-mail in the request body was incorrect."
 
 msgid "invalid_username"
-msgstr "THe username in the request body was incorrect."
+msgstr "The username in the request body was incorrect."
 
 msgid "invalid_password"
-msgstr "THe password in the request body was incorrect."
+msgstr "The password in the request body was incorrect."
 
 msgid "done_tick"
 msgstr "Green tick"
