@@ -79,6 +79,7 @@ func getUserData(r *http.Request) (*http.Request, bool, error) {
 		if errors.Is(err, pgx.ErrNoRows) {
 			err = nil
 		}
+		user.Hostname = config.Config().Hostname
 		r.WithContext(context.WithValue(r.Context(), "user", &user))
 		return r, present, err
 	}
@@ -143,6 +144,8 @@ func getUserData(r *http.Request) (*http.Request, bool, error) {
 
 		// Set the hostname to the cross node data.
 		user.Hostname = msg.Hostname
+		user.Email = ""
+		user.Confirmed = false
 	}
 
 	return r, false, nil

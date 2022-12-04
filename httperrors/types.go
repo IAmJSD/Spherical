@@ -2,8 +2,9 @@ package httperrors
 
 import (
 	"encoding/xml"
-	"github.com/vmihailenco/msgpack/v5"
 	"net/http"
+
+	"github.com/vmihailenco/msgpack/v5"
 )
 
 // HTTPCode is used to define the HTTP error code.
@@ -15,6 +16,9 @@ const (
 
 	// HTTPCodeInternalServerError is used when there is an internal server error.
 	HTTPCodeInternalServerError = HTTPCode("internal_server_error")
+
+	// HTTPCodeSameNode is an error that is used when the user is on the same node for a cross-node specific request.
+	HTTPCodeSameNode = HTTPCode("same_node")
 )
 
 // HTTPError is used to define a interface that represents an HTTP error.
@@ -59,3 +63,11 @@ func (i InternalServerError) EncodeMsgpack(e *msgpack.Encoder) error {
 		"message": "Internal Server Error",
 	})
 }
+
+// SameNode is used to define an error that is used when the user is on the same node for a cross-node specific request.
+type SameNode struct {
+	Message string `json:"message" xml:"message" msgpack:"message"`
+}
+
+func (i SameNode) status() int         { return http.StatusBadRequest }
+func (i SameNode) errorCode() HTTPCode { return HTTPCodeSameNode }

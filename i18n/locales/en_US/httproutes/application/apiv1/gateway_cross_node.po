@@ -1,0 +1,2 @@
+msgid "same_node"
+msgstr "Please use a Bearer token to access the gateway."
