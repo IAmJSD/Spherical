@@ -13,6 +13,7 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/hako/durafmt"
 	"github.com/jakemakesstuff/spherical/utils/random"
+	"github.com/vmihailenco/msgpack/v5"
 )
 
 var (
@@ -101,8 +102,14 @@ func EditAndPublish(ctx context.Context, tableName string, f func(context.Contex
 }
 
 var (
+	// Events related to watching a table.
 	watchEvents     = map[string][]chan json.RawMessage{}
 	watchEventsLock = sync.RWMutex{}
+
+	// Events related to watching generic events.
+	genericEvents         = map[string][]chan []byte{}
+	genericEventsHandlers = map[string]struct{}{}
+	genericEventsLock     = sync.RWMutex{}
 )
 
 // Starts the watch loop.
@@ -176,4 +183,155 @@ func AddWatchEvent[T any](tableName string, f func(T)) {
 	watchEventsLock.Lock()
 	watchEvents[tableName] = append(watchEvents[tableName], ch)
 	watchEventsLock.Unlock()
+}
+
+type genericPayload struct {
+	ID   uint64 `msgpack:"i"`
+	Data []byte `msgpack:"d"`
+}
+
+// Watches the specified event name (with the "generic-event:" prefix) and calls the channels when it is received.
+func watchEvent(ctx context.Context, eventName string, client *redis.Client) {
+	// Prepend the prefix.
+	channelName := eventName
+	eventName = "generic-event:" + eventName
+
+	// Defines the backoff time.
+	var backoffTime time.Duration
+
+	// Register that we are handling this.
+	genericEventsLock.Lock()
+	_, ok := genericEventsHandlers[channelName]
+	if ok {
+		// Raced.
+		genericEventsLock.Unlock()
+		return
+	}
+	genericEventsHandlers[channelName] = struct{}{}
+	genericEventsLock.Unlock()
+	defer func() {
+		genericEventsLock.Lock()
+		delete(genericEventsHandlers, channelName)
+		genericEventsLock.Unlock()
+	}()
+
+	// Outer for loop to handle re-subscriptions.
+	var closer func() error
+	defer func() {
+		if closer != nil {
+			closer()
+		}
+	}()
+	for {
+		// Get the subscriber.
+		subscriber := client.Subscribe(ctx, eventName)
+		closer = subscriber.Close
+
+		// Inner for loop to handle content.
+		for {
+			msg, err := subscriber.ReceiveMessage(ctx)
+			if err != nil {
+				// Check if the context was cancelled.
+				if errors.Is(err, context.Canceled) {
+					// Just return here. This was because it was re-initialised. This loop will be remade.
+					return
+				}
+
+				// Calculate the backoff value.
+				backoffTime += time.Millisecond * 10
+				if backoffTime > time.Minute*10 {
+					// After 10 mins, go back to the original polling speed.
+					backoffTime = time.Millisecond * 10
+				}
+
+				// Log the error.
+				_, _ = fmt.Fprintf(os.Stderr, "[db] Watch event %s had an error: %v. Backing off for %s.",
+					err, durafmt.Parse(backoffTime).String())
+
+				// Sleep for the time specified, kill the subscriber, and then break.
+				time.Sleep(backoffTime)
+				_ = subscriber.Close()
+				break
+			}
+
+			var p genericPayload
+			if err := msgpack.Unmarshal([]byte(msg.Payload), &p); err == nil {
+				// Make sure this isn't intentionally ignored.
+				if !isIgnoreId(p.ID) {
+					// If not, dispatch it non-blocking.
+					genericEventsLock.RLock()
+					channels := genericEvents[channelName]
+					genericEventsLock.RUnlock()
+					if channels == nil {
+						// Channels no longer exist.
+						return
+					}
+					for _, ch := range channels {
+						select {
+						case ch <- p.Data:
+						default:
+						}
+					}
+				}
+			} else {
+				// Error with the payload.
+				_, _ = fmt.Fprintf(
+					os.Stderr, "[db] Watch failed to unmarshal msgpack for event %s: %v", eventName, err)
+			}
+		}
+	}
+}
+
+// AddGenericEventHandler is used to add an event handler for an event.
+func AddGenericEventHandler(eventName string, f func([]byte)) (deleter func()) {
+	ch := make(chan []byte)
+	go func() {
+		for {
+			ev, ok := <-ch
+			if !ok {
+				return
+			}
+			f(ev)
+		}
+	}()
+	genericEventsLock.Lock()
+	genericEvents[eventName] = append(genericEvents[eventName], ch)
+	if _, ok := genericEventsHandlers[eventName]; !ok {
+		currentConnLock.RLock()
+		redisConn := currentRedisConn
+		currentConnLock.RUnlock()
+		go watchEvent(context.Background(), eventName, redisConn)
+	}
+	genericEventsLock.Unlock()
+	return func() {
+		genericEventsLock.Lock()
+		defer genericEventsLock.Unlock()
+		for i, c := range genericEvents[eventName] {
+			if c == ch {
+				genericEvents[eventName] = append(genericEvents[eventName][:i], genericEvents[eventName][i+1:]...)
+				break
+			}
+		}
+		if len(genericEvents[eventName]) == 0 {
+			delete(genericEvents, eventName)
+		}
+	}
+}
+
+// PublishGenericEvent is used to publish a generic event.
+func PublishGenericEvent(eventName string, data []byte) error {
+	// Get the ID.
+	id := getIgnoreId()
+
+	// Marshal the payload.
+	payload, err := msgpack.Marshal(genericPayload{
+		ID:   id,
+		Data: data,
+	})
+	if err != nil {
+		return err
+	}
+
+	// Publish the event.
+	return currentRedisConn.Publish(context.Background(), "generic-event:"+eventName, payload).Err()
 }
