@@ -8,7 +8,8 @@
     "bundle:prod": "cross-env NODE_ENV=production webpack && node ./scripts/normaliseManifset.js",
     "start:dev": "yarn run bundle:dev && cross-env DEV=true go run ./cmd/spherical",
     "start:prod": "yarn run bundle:prod && cross-env DEV=false go run ./cmd/spherical",
-    "build": "yarn run bundle:prod && rimraf dist && mkdir dist && node ./scripts/buildBinaries.js"
+    "build": "yarn run bundle:prod && rimraf dist && mkdir dist && node ./scripts/buildBinaries.js",
+    "test:integration": "./integration/run.sh"
   },
   "devDependencies": {
     "@types/markdown-it": "^12.2.3",
