@@ -27,7 +27,6 @@ var (
 
 var localsOverride fs.FS
 
-// TODO: dev mode
 func cachedPoGet(fp string) *po.File {
 	if localsOverride == nil {
 		// Check the cache with the filename key.

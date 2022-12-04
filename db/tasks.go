@@ -56,3 +56,23 @@ func InternallyAddTask(ctx context.Context, task *Task, in time.Duration) (strin
 		Scan(&taskId)
 	return taskId, err
 }
+
+// DeleteTasks is used to delete task(s) from the database. Returns true for deleted if they all were.
+func DeleteTasks(ctx context.Context, taskIds ...string) (deleted bool, err error) {
+	query := "DELETE FROM tasks WHERE task_id = ANY($1)"
+	res, err := dbConn().Exec(ctx, query, taskIds)
+	if err != nil {
+		return false, err
+	}
+	return res.RowsAffected() == int64(len(taskIds)), nil
+}
+
+// ExtendTask is used to extend the scheduled time of a task.
+func ExtendTask(ctx context.Context, taskId string, in time.Duration) (extended bool, err error) {
+	query := "UPDATE tasks SET scheduled_for = NOW() + $2 WHERE task_id = $1"
+	res, err := dbConn().Exec(ctx, query, taskId, in)
+	if err != nil {
+		return false, err
+	}
+	return res.RowsAffected() == 1, nil
+}

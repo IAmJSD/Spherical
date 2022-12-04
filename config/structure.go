@@ -68,6 +68,15 @@ type Structure struct {
 
 	// SchedulerSleepTime is how number of milliseconds the scheduler sleeps for. Defaults to 1000ms.
 	SchedulerSleepTime uint `config:"scheduler_sleep_time"`
+
+	// Consensus is the level of consensus that is required for hash validation. Defaults to 3.
+	Consensus uint `config:"consensus"`
+
+	// Informers are hash verifiers that should be informed of new hashes.
+	Informers []string `config:"informers"`
+
+	// Trusted is a list of trusted hash verifiers. These are used to decide if a message is genuine.
+	Trusted []string `config:"trusted"`
 }
 
 var (

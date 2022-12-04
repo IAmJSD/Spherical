@@ -1,0 +1,2 @@
+msgid "bad_auth_header"
+msgstr "Authorization header is not valid."

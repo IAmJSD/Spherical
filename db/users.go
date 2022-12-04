@@ -3,10 +3,11 @@ package db
 import (
 	"context"
 	"errors"
-	"github.com/jackc/pgconn"
 	"runtime"
 
-	"github.com/jackc/pgx/v4"
+	"github.com/georgysavva/scany/v2/pgxscan"
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgx/v5"
 	"github.com/jakemakesstuff/spherical/utils/password"
 	"github.com/jakemakesstuff/spherical/utils/regexes"
 )
@@ -110,4 +111,11 @@ func HasOwner(ctx context.Context) bool {
 	val := false
 	_ = dbConn().QueryRow(ctx, query).Scan(&val)
 	return val
+}
+
+// ScanUserFromToken is used to scan a user from a token.
+func ScanUserFromToken(ctx context.Context, token string, user any) error {
+	return pgxscan.Get(
+		ctx, dbConn(), user,
+		"SELECT * FROM users WHERE user_id = (SELECT user_id FROM sessions WHERE token = $1)", token)
 }
