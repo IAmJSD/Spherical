@@ -28,6 +28,38 @@ func parsePayload(b []byte) any {
 			return nil
 		}
 		return p
+	case 1:
+		// Parse the AcceptedPayload payload.
+		p := &AcceptedPayload{}
+		err := msgpack.Unmarshal(b, p)
+		if err != nil {
+			return nil
+		}
+		return p
+	case 2:
+		// Parse the HeartbeatPayload payload.
+		p := &HeartbeatPayload{}
+		err := msgpack.Unmarshal(b, p)
+		if err != nil {
+			return nil
+		}
+		return p
+	case 3:
+		// Parse the JoinGuildPayload payload.
+		p := &JoinGuildPayload{}
+		err := msgpack.Unmarshal(b, p)
+		if err != nil {
+			return nil
+		}
+		return p
+	case 4:
+		// Parse the ReadyPayload payload.
+		p := &ReadyPayload{}
+		err := msgpack.Unmarshal(b, p)
+		if err != nil {
+			return nil
+		}
+		return p
 	}
 	return nil
 }
@@ -37,8 +69,16 @@ func serializePayload(p any) ([]byte, error) {
 	// Switch on the payload.
 	var id uint16
 	switch p.(type) {
+	case *AcceptedPayload, AcceptedPayload:
+		id = 1
+	case *HeartbeatPayload, HeartbeatPayload:
+		id = 2
 	case *HelloPayload, HelloPayload:
 		id = 0
+	case *JoinGuildPayload, JoinGuildPayload:
+		id = 3
+	case *ReadyPayload, ReadyPayload:
+		id = 4
 	default:
 		return nil, errors.New("invalid payload")
 	}

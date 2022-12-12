@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"compress/zlib"
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -13,6 +14,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/jakemakesstuff/spherical/config"
 	"github.com/jakemakesstuff/spherical/db"
+	"github.com/jakemakesstuff/spherical/errhandler"
 	"github.com/jakemakesstuff/spherical/httproutes/application/auth"
 	"github.com/vmihailenco/msgpack/v5"
 )
@@ -150,6 +152,9 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		err = msgpack.Unmarshal(userB, &user)
 		if err != nil {
+			errhandler.Process(err, "gateway/setup", map[string]string{
+				"bytes": base64.StdEncoding.EncodeToString(userB),
+			})
 			disconnectWs(ws, &DisconnectPayload{
 				Reason:    "internal server error",
 				Reconnect: true,

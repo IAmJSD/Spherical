@@ -6,9 +6,11 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+const cost = 10
+
 // HashAndSalt is used to hash and salt a password with bcrypt.
 func HashAndSalt(password string) string {
-	b, _ := bcrypt.GenerateFromPassword([]byte(password), 10)
+	b, _ := bcrypt.GenerateFromPassword([]byte(password), cost)
 	return base64.StdEncoding.EncodeToString(b)
 }
 

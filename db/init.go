@@ -35,7 +35,7 @@ func Init(pgConnectionUrl, redisConnectionUrl string) error {
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*2)
 	defer cancel()
-	conn, err := pgxpool.Connect(ctx, pgConnectionUrl)
+	conn, err := pgxpool.New(ctx, pgConnectionUrl)
 	if err != nil {
 		return err
 	}

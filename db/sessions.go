@@ -51,22 +51,15 @@ func GetCrossNodeToken(ctx context.Context, token string) ([]byte, error) {
 	currentConnLock.RUnlock()
 
 	// Acquire a lock to ensure we do not race on getting and deleting tokens.
-	c := dbConn()
-	_, err := c.Exec(ctx, "SELECT pg_advisory_lock(1221)")
-	if err != nil {
-		return nil, err
-	}
-	defer func() {
-		_, _ = c.Exec(ctx, "SELECT pg_advisory_unlock(1221)")
-	}()
+	return UseGlobalLock(ctx, "cross_node_token:"+token, func() ([]byte, error) {
+		// Get the data from Redis.
+		data, err := redisConn.Get(ctx, token).Bytes()
+		if err != nil {
+			return nil, err
+		}
 
-	// Get the data from Redis.
-	data, err := redisConn.Get(ctx, token).Bytes()
-	if err != nil {
-		return nil, err
-	}
-
-	// Delete the data from Redis.
-	_, err = redisConn.Del(ctx, token).Result()
-	return data, err
+		// Delete the data from Redis.
+		_, err = redisConn.Del(ctx, token).Result()
+		return data, err
+	})
 }
