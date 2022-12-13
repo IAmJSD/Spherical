@@ -5,10 +5,10 @@ import (
 
 	"github.com/jakemakesstuff/spherical/db"
 	"github.com/jakemakesstuff/spherical/errhandler"
-	"github.com/jakemakesstuff/spherical/httperrors"
-	"github.com/jakemakesstuff/spherical/httpresponse"
 	"github.com/jakemakesstuff/spherical/httproutes/application/auth"
 	"github.com/jakemakesstuff/spherical/i18n"
+	"github.com/jakemakesstuff/spherical/utils/httperrors"
+	"github.com/jakemakesstuff/spherical/utils/httpresponse"
 	"github.com/vmihailenco/msgpack/v5"
 )
 

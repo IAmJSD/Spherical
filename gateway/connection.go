@@ -2,6 +2,9 @@ package gateway
 
 import (
 	"context"
+	"errors"
+	"io"
+	"net/http"
 	"strconv"
 	"strings"
 	"sync"
@@ -13,6 +16,8 @@ import (
 	"github.com/jakemakesstuff/spherical/db"
 	"github.com/jakemakesstuff/spherical/errhandler"
 	"github.com/jakemakesstuff/spherical/httproutes/application/auth"
+	"github.com/jakemakesstuff/spherical/utils/httpclient"
+	"github.com/vmihailenco/msgpack/v5"
 )
 
 type connection struct {
@@ -27,6 +32,22 @@ type connection struct {
 
 	activeHeartbeats     map[string]*time.Timer
 	activeHeartbeatsLock sync.Mutex
+
+	disconnectors     func()
+	disconnectorsLock sync.Mutex
+}
+
+func (c *connection) addDisconnector(f func()) {
+	c.disconnectorsLock.Lock()
+	defer c.disconnectorsLock.Unlock()
+	oldFunc := c.disconnectors
+	c.disconnectors = func() {
+		if oldFunc != nil {
+			// There was a function before it. We should remove it.
+			oldFunc()
+		}
+		f()
+	}
 }
 
 const clientHeartbeat = time.Second * 2
@@ -45,8 +66,76 @@ func (c *connection) send(x any) error {
 // Handles the cross node connection spawning and trying to get guilds in the context window.\
 func (c *connection) spawnCrossNodeConn(
 	ctx context.Context, hostname string, guildIds []uint64,
-) (guilds []Guild, err error) {
-	// TODO
+) (ready *ReadyPayload, stillAlive bool, err error) {
+	// Get a cross node gateway token.
+	c.userLock.RLock()
+	user := c.user
+	c.userLock.RUnlock()
+	var res *http.Response
+	res, err = httpclient.SendCrossNodeMessage(
+		ctx, hostname, "/api/v1/gateway/cross_node",
+		map[string]bool{"r": true}, *user)
+	if err != nil {
+		return
+	}
+
+	// Get the token.
+	if res.StatusCode != 200 {
+		err = errors.New("returned status code " + strconv.Itoa(res.StatusCode) + " from cross node gateway")
+		return
+	}
+	var b []byte
+	b, err = io.ReadAll(io.LimitReader(res.Body, 10000))
+	_ = res.Body.Close()
+	if err != nil {
+		return
+	}
+
+	// Unmarshal the token.
+	var token string
+	err = msgpack.Unmarshal(b, &token)
+	if err != nil {
+		return
+	}
+
+	// Connect to the cross node gateway.
+	cc := newCrossNodeClient("wss://"+hostname+"/api/v1/gateway", token, c)
+	ch := make(chan crossNodeReady, 1)
+	cc.addReadyHandler(ch)
+	select {
+	case <-ctx.Done():
+		// We got timed out. Go ahead and send that this is unavailable.
+		err = errors.New("guilds timed out")
+		stillAlive = true
+	case x := <-ch:
+		// Handle reading the result and processing any errors.
+		if ready, err = x.unwrap(); err != nil {
+			// Failed to connect to the websocket.
+			return
+		}
+
+		// Process the ready payload.
+		if ready.UnavailableGuilds == nil {
+			ready.UnavailableGuilds = []Guild{}
+		}
+		if ready.AvailableGuilds == nil {
+			ready.AvailableGuilds = []Guild{}
+		}
+		for i, v := range ready.UnavailableGuilds {
+			ready.UnavailableGuilds[i] = Guild{
+				ID:        v.ID,
+				Hostname:  hostname,
+				Available: false,
+			}
+		}
+		for i, v := range ready.AvailableGuilds {
+			ready.AvailableGuilds[i] = Guild{
+				ID:        v.ID,
+				Hostname:  hostname,
+				Available: true,
+			}
+		}
+	}
 	return
 }
 
@@ -101,15 +190,19 @@ func (c *connection) handleGuildFetching(ctx context.Context) (availableGuilds, 
 	for hostname, guildIds := range guildHostnames {
 		go func(hostname string, guildIds []uint64) {
 			defer wg.Done()
-			guilds, err := c.spawnCrossNodeConn(ctx, hostname, guildIds)
+			ready, stillAlive, err := c.spawnCrossNodeConn(ctx, hostname, guildIds)
+			if !stillAlive {
+				// TODO: handle backing off.
+			}
 			mu.Lock()
 			defer mu.Unlock()
 			if err == nil {
-				// Append guilds to available.
-				availableGuilds = append(availableGuilds, guilds...)
+				// Append guilds to available and unavailable.
+				availableGuilds = append(availableGuilds, ready.AvailableGuilds...)
+				unavailableGuilds = append(unavailableGuilds, ready.UnavailableGuilds...)
 			} else {
 				// Append guilds to unavailable.
-				guilds = make([]Guild, len(guildIds))
+				guilds := make([]Guild, len(guildIds))
 				for i, guildId := range guildIds {
 					guilds[i] = Guild{
 						ID:       guildId,
@@ -164,6 +257,10 @@ func (c *connection) readLoop() {
 		// Get the packet.
 		_, p, err := c.r.ReadMessage()
 		if err != nil {
+			c.disconnectorsLock.Lock()
+			d := c.disconnectors
+			c.disconnectorsLock.Unlock()
+			d()
 			_ = c.ws.Close()
 			return
 		}
@@ -173,13 +270,15 @@ func (c *connection) readLoop() {
 		case *HeartbeatPayload:
 			// Handle the active heartbeat ticker.
 			c.activeHeartbeatsLock.Lock()
-			if timer, ok := c.activeHeartbeats[val.ID]; ok {
-				timer.Stop()
-				delete(c.activeHeartbeats, val.ID)
+			if c.activeHeartbeats != nil {
+				if timer, ok := c.activeHeartbeats[val.ID]; ok {
+					timer.Stop()
+					delete(c.activeHeartbeats, val.ID)
+				}
 			}
 			c.activeHeartbeatsLock.Unlock()
-			// TODO
 		}
+		// TODO
 	}
 }
 
@@ -224,6 +323,10 @@ func (c *connection) start() {
 		UnavailableGuilds: unavailableGuilds,
 	})
 	if err != nil {
+		c.disconnectorsLock.Lock()
+		d := c.disconnectors
+		c.disconnectorsLock.Unlock()
+		d()
 		_ = c.ws.Close()
 		return
 	}

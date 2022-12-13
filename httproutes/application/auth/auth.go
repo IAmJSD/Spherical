@@ -16,8 +16,8 @@ import (
 	"github.com/jakemakesstuff/spherical/db"
 	"github.com/jakemakesstuff/spherical/errhandler"
 	"github.com/jakemakesstuff/spherical/hashverifier"
-	"github.com/jakemakesstuff/spherical/httperrors"
 	"github.com/jakemakesstuff/spherical/i18n"
+	"github.com/jakemakesstuff/spherical/utils/httperrors"
 )
 
 // UserData defines any user data which was injected during the middleware.
@@ -35,13 +35,13 @@ type UserData struct {
 	AvatarURL string `json:"avatar_url" validate:"url,required"`
 
 	// Hostname is used to define the hostname of the node making this request.
-	Hostname string
+	Hostname string `json:"hostname,omitempty"`
 
 	// Email is used to define the e-mail address of the user. Is blank if not this node.
-	Email string
+	Email string `json:"email,omitempty"`
 
 	// Confirmed is used to define if the e-mail address is confirmed. Is false if not this node.
-	Confirmed bool
+	Confirmed bool `json:"confirmed"`
 }
 
 // SameNode defines if the user data is coming from this node.

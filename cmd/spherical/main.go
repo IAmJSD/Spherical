@@ -18,6 +18,7 @@ import (
 	"github.com/jakemakesstuff/spherical/httproutes"
 	"github.com/jakemakesstuff/spherical/i18n"
 	"github.com/jakemakesstuff/spherical/scheduler"
+	"github.com/jakemakesstuff/spherical/utils/globalstate"
 )
 
 func displayVersion() {
@@ -81,7 +82,7 @@ func main() {
 	i18n.Setup(isDev)
 
 	// Generate or get the PGP key.
-	_, privKeyArmored, err := db.GetPGPKey(func() (pubKey, privKey string) {
+	pubKeyArmored, privKeyArmored, err := db.GetPGPKey(func() (pubKey, privKey string) {
 		fmt.Print("[pgp] Generating 4096-bit pgp key - this might take a while...")
 		key, err := crypto.GenerateKey(
 			"Spherical", "noreply.nodegen@spherical.gg", "rsa", 4096)
@@ -111,6 +112,11 @@ func main() {
 	if !key.IsPrivate() {
 		panic("key is not private")
 	}
+	keyring, err := crypto.NewKeyRing(key)
+	if err != nil {
+		panic(err)
+	}
+	globalstate.Set("keyring", keyring)
 
 	// Start watching the config.
 	if err := config.Watch(); err != nil {
@@ -137,7 +143,7 @@ func main() {
 
 	// Start the listener.
 	fmt.Println("[http] Starting listener on", *listener)
-	if err := http.ListenAndServe(*listener, httproutes.SelectRouter(isDev)); err != nil {
+	if err := http.ListenAndServe(*listener, httproutes.SelectRouter(isDev, pubKeyArmored)); err != nil {
 		panic(err)
 	}
 }

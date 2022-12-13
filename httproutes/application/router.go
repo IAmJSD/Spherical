@@ -2,6 +2,7 @@ package application
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/gorilla/mux"
 	"github.com/jakemakesstuff/spherical/httproutes/application/apiv1"
@@ -14,6 +15,12 @@ func Router(dev bool) http.Handler {
 
 	r.PathPrefix("/setup").HandlerFunc(func(writer http.ResponseWriter, req *http.Request) {
 		http.Redirect(writer, req, "/", http.StatusPermanentRedirect)
+	})
+	r.Path("/spherical.pub").HandlerFunc(func(writer http.ResponseWriter, req *http.Request) {
+		pubKeyArmored := req.Context().Value("pubKeyArmored").(string)
+		writer.Header().Set("Content-Type", "application/pgp-keys")
+		writer.Header().Set("Content-Length", strconv.Itoa(len(pubKeyArmored)))
+		_, _ = writer.Write([]byte(pubKeyArmored))
 	})
 	apiv1.Router(r.PathPrefix("/api/v1").Subrouter())
 
