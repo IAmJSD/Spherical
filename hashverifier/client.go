@@ -34,6 +34,9 @@ type Client struct {
 	// be set to 3.
 	consensus uint
 
+	// Defines our current hostname.
+	hostname string
+
 	// Defines servers that are trusted. A trusted server is used alongside the consensus logic to determine if a hash
 	// was valid at some point (this might be the case if for example the server was deleted, the key was changed, the
 	// server was pretending it never sent a message).
@@ -42,7 +45,7 @@ type Client struct {
 }
 
 // NewClient is used to make a new version of the client above.
-func NewClient(cache HashCache, informants, trusted []string, consensus uint) *Client {
+func NewClient(cache HashCache, informants, trusted []string, hostname string, consensus uint) *Client {
 	if cache == nil {
 		cache = nopCache{}
 	}
@@ -56,6 +59,7 @@ func NewClient(cache HashCache, informants, trusted []string, consensus uint) *C
 		cache:      cache,
 		informants: informants,
 		consensus:  consensus,
+		hostname:   strings.TrimSpace(strings.ToLower(hostname)),
 		trusted:    trusted,
 	}
 }
@@ -162,11 +166,36 @@ func (c *Client) getInformantsAndTrusted() []string {
 
 var trueB = []byte("true")
 
+func (c *Client) mergeWithTrusted(skip []string) []string {
+	trusted := c.trusted
+	l := len(trusted) + len(skip)
+	if c.hostname != "" {
+		l++
+	}
+	a := make([]string, 1)
+	copy(a, trusted)
+	copy(a[len(trusted):], skip)
+	if c.hostname != "" {
+		a[l-1] = c.hostname
+	}
+	return a
+}
+
 // ProcessHashBlob is used to process a hash blob that was sent to you. Returns the boolean that should be returned
 // to the user.
-func (c *Client) ProcessHashBlob(ctx context.Context, blob string) bool {
+func (c *Client) ProcessHashBlob(ctx context.Context, blob string, skip []string) bool {
 	// Make sure it doesn't end with a new line.
 	blob = strings.TrimSpace(blob)
+
+	// Handle skip hostnames.
+	if skip == nil || c.hostname == "" {
+		for _, v := range skip {
+			if v == c.hostname {
+				// Skip this host.
+				return false
+			}
+		}
+	}
 
 	// Hash all of this together.
 	sha := sha256.New()
@@ -175,7 +204,7 @@ func (c *Client) ProcessHashBlob(ctx context.Context, blob string) bool {
 
 	// Before we do anything further, check if we have already dealt with this in the cache.
 	if c.cache.Exists(totalHash) {
-		// If we have, just return it right away. We do not need to worry about informing, we would've done that on
+		// If we have, just return true right away. We do not need to worry about informing, we would've done that on
 		// send.
 		return true
 	}
@@ -272,6 +301,22 @@ internetLookup:
 			wg := sync.WaitGroup{}
 			wg.Add(len(servers))
 			for _, node := range servers {
+				// If it is in skip, skip it.
+				if skip != nil {
+					skipNode := false
+					for _, v := range skip {
+						if v == node {
+							skipNode = true
+							break
+						}
+					}
+					if skipNode {
+						wg.Done()
+						continue
+					}
+				}
+
+				// Start a goroutine to deal with it.
 				node := node
 				go func() {
 					defer wg.Done()
@@ -286,6 +331,8 @@ internetLookup:
 					if err != nil {
 						return
 					}
+
+					req.Header.Set("X-Skip", strings.Join(c.mergeWithTrusted(skip), ","))
 
 					resp, err := http.DefaultClient.Do(req)
 					if err != nil {

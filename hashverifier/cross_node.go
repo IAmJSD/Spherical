@@ -70,8 +70,8 @@ func (msg CrossNodeMessage) Validate(ctx context.Context, consensus uint, inform
 	hashStr := base64.StdEncoding.EncodeToString(hash)
 
 	// Process the hash blob.
-	valid := NewClient(nil, informers, trusted, consensus).ProcessHashBlob(
-		ctx, msg.Hostname+"\n"+hashStr+"\n"+msg.Signature)
+	valid := NewClient(nil, informers, trusted, "", consensus).ProcessHashBlob(
+		ctx, msg.Hostname+"\n"+hashStr+"\n"+msg.Signature, nil)
 	if !valid {
 		return UserFacingError{message: "cannot verify the message came from the hostname specified"}
 	}

@@ -63,7 +63,7 @@ func main() {
 	disableDefaultTrusted := flag.Bool(
 		"disable-default-trusted", false, "disable the default trusted hash verification node list")
 	hostname := flag.String(
-		"hostnwme", "", "used to remove the hostname from the informants/trusted - should be set if node is default trusted")
+		"hostnwme", "", "used to remove the hostname from the informants/trusted and set the skip header - should be set if node is default trusted")
 
 	var informantsFlag arrayFlags
 	flag.Var(
@@ -92,6 +92,7 @@ func main() {
 		getDriver(redisUrl, boltPath),
 		informants,
 		trusted,
+		*hostname,
 		*consensus)
 	fmt.Println("Listening on host", *host)
 	if err := fasthttp.ListenAndServe(*host, handler(client)); err != nil {

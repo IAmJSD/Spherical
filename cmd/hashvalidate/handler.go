@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"strings"
 
 	"github.com/jakemakesstuff/spherical/hashverifier"
 	"github.com/valyala/fasthttp"
@@ -26,7 +27,11 @@ func postHandler(ctx *fasthttp.RequestCtx, client *hashverifier.Client) {
 	}
 
 	// Get the response data.
-	resp := client.ProcessHashBlob(ctx, body)
+	xSkip := strings.Split(string(ctx.Request.Header.Peek("X-Skip")), ",")
+	for i, v := range xSkip {
+		xSkip[i] = strings.TrimSpace(strings.ToLower(v))
+	}
+	resp := client.ProcessHashBlob(ctx, body, xSkip)
 	ctx.Response.Header.Set("Access-Control-Allow-Origin", "*")
 	ctx.Response.Header.Set("Content-Type", "application/json")
 	ctx.Response.SetStatusCode(204)
