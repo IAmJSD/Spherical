@@ -11,12 +11,28 @@ import (
 	"github.com/jakemakesstuff/spherical/jobs"
 	"github.com/jakemakesstuff/spherical/scheduler"
 	"github.com/jakemakesstuff/spherical/utils/httperrors"
+	"github.com/jakemakesstuff/spherical/utils/httprequest"
 	"github.com/jakemakesstuff/spherical/utils/httpresponse"
 )
 
+type authInfo struct {
+	Username string `json:"username" xml:"username" msgpack:"username"`
+	Password string `json:"password" xml:"password" msgpack:"password"`
+}
+
 func authPasswordHn(w http.ResponseWriter, r *http.Request) {
+	// Get the username and password from the body.
+	var info authInfo
+	err := httprequest.UnmarshalFromBody(r, &info)
+	if err != nil {
+		httperrors.Throw(w, r, httperrors.InvalidBody{
+			Message: i18n.GetWithRequest(r, "httproutes/application/apiv1/password_auth:invalid_body"),
+		})
+		return
+	}
+
 	// Authenticate with the username and password.
-	userId, err := db.AuthenticateUserByPassword(r.Context(), "username", "password")
+	userId, err := db.AuthenticateUserByPassword(r.Context(), info.Username, info.Password)
 	if err != nil {
 		// Handle if this user does not support password authentication.
 		if err == db.ErrNotPasswordAuth {

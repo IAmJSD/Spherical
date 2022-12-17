@@ -25,6 +25,9 @@ const (
 
 	// HTTPCodeNoPasswordAuthSupport is used when the user does not support password authentication.
 	HTTPCodeNoPasswordAuthSupport = HTTPCode("no_password_auth_support")
+
+	// HTTPCodeInvalidBody is used when the body is invalid.
+	HTTPCodeInvalidBody = HTTPCode("invalid_body")
 )
 
 // HTTPError is used to define a interface that represents an HTTP error.
@@ -100,3 +103,11 @@ type NoPasswordAuthSupport struct {
 
 func (n NoPasswordAuthSupport) status() int         { return http.StatusUnauthorized }
 func (n NoPasswordAuthSupport) errorCode() HTTPCode { return HTTPCodeNoPasswordAuthSupport }
+
+// InvalidBody is thrown when the body is invalid.
+type InvalidBody struct {
+	Message string `json:"message" xml:"message" msgpack:"message"`
+}
+
+func (i InvalidBody) status() int         { return http.StatusBadRequest }
+func (i InvalidBody) errorCode() HTTPCode { return HTTPCodeInvalidBody }

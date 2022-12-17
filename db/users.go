@@ -172,7 +172,7 @@ func AuthenticateUserByPassword(ctx context.Context, usernameOrEmail, passwordIn
 	}
 
 	// We now know the password is valid. Let's check if the user has 2FA enabled.
-	query = "SELECT totp_token IS NOT NULL FROM users_mfa WHERE udser_id = $1"
+	query = "SELECT totp_token IS NOT NULL FROM users_mfa WHERE user_id = $1"
 	totpEnabled := false
 	err = dbConn().QueryRow(ctx, query, userId).Scan(&totpEnabled)
 	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
