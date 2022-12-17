@@ -16,19 +16,22 @@ import (
 	"github.com/jakemakesstuff/spherical/db"
 	"github.com/jakemakesstuff/spherical/errhandler"
 	"github.com/jakemakesstuff/spherical/httproutes/application/auth"
+	"github.com/jakemakesstuff/spherical/utils/helpers"
 	"github.com/jakemakesstuff/spherical/utils/httpclient"
 	"github.com/vmihailenco/msgpack/v5"
 )
 
 type connection struct {
 	ws *websocket.Conn
-	r  payloadReader
 
 	w     payloadWriter
 	wLock sync.Mutex
 
 	user     *auth.UserData
 	userLock sync.RWMutex
+
+	crossNodeClients map[string]*crossNodeClient
+	crossNodeLock    sync.RWMutex
 
 	activeHeartbeats     map[string]*time.Timer
 	activeHeartbeatsLock sync.Mutex
@@ -99,7 +102,27 @@ func (c *connection) spawnCrossNodeConn(
 	}
 
 	// Connect to the cross node gateway.
-	cc := newCrossNodeClient("wss://"+hostname+"/api/v1/gateway", token, c)
+	var cc *crossNodeClient
+	cc, err = newCrossNodeClient("wss://"+hostname+"/api/v1/gateway", token, c)
+	if err != nil {
+		// Failed to connect to the cross node gateway.
+		return
+	}
+
+	// Add the cross node client to the map.
+	c.crossNodeLock.Lock()
+	if c.crossNodeClients == nil {
+		c.crossNodeClients = map[string]*crossNodeClient{}
+	}
+	c.crossNodeClients[hostname] = cc
+	cc.addDestructor(func() {
+		c.crossNodeLock.Lock()
+		delete(c.crossNodeClients, hostname)
+		c.crossNodeLock.Unlock()
+	})
+	c.crossNodeLock.Unlock()
+
+	// Add the ready handler and wait to either be timed out or for it to be done.
 	ch := make(chan crossNodeReady, 1)
 	cc.addReadyHandler(ch)
 	select {
@@ -121,21 +144,58 @@ func (c *connection) spawnCrossNodeConn(
 		if ready.AvailableGuilds == nil {
 			ready.AvailableGuilds = []Guild{}
 		}
-		for i, v := range ready.UnavailableGuilds {
-			ready.UnavailableGuilds[i] = Guild{
-				ID:        v.ID,
-				Hostname:  hostname,
-				Available: false,
+		unavailable := make([]Guild, 0, len(ready.UnavailableGuilds))
+		for _, v := range ready.UnavailableGuilds {
+			if helpers.SliceIncludes(guildIds, v.ID) {
+				unavailable = append(unavailable, Guild{
+					ID:        v.ID,
+					Hostname:  hostname,
+					Available: false,
+				})
 			}
 		}
-		for i, v := range ready.AvailableGuilds {
-			ready.AvailableGuilds[i] = Guild{
-				ID:        v.ID,
-				Hostname:  hostname,
-				Available: true,
+		ready.UnavailableGuilds = unavailable
+		available := make([]Guild, 0, len(ready.AvailableGuilds))
+		for _, v := range ready.AvailableGuilds {
+			if helpers.SliceIncludes(guildIds, v.ID) {
+				// Ensure the hostname is what we expect and then append it.
+				v.Hostname = hostname
+				available = append(available, v)
 			}
 		}
+		ready.AvailableGuilds = available
+
+		// Return here.
+		return
 	}
+
+	// Start a goroutine to wait for the ready payload to finally be sent.
+	go func() {
+		// Wait for the goroutine with no timeout.
+		x := <-ch
+		ready, err := x.unwrap()
+
+		if err != nil {
+			// Start the backoff and then return.
+			// TODO
+			return
+		}
+
+		// Send all compatible available guilds as update payloads.
+		for _, v := range ready.AvailableGuilds {
+			if helpers.SliceIncludes(guildIds, v.ID) {
+				// Ensure the hostname is what we expect and then send it.
+				v.Hostname = hostname
+				err = c.send(GuildUpdatePayload{v})
+				if err != nil {
+					// Failure to send means the rest won't work.
+					return
+				}
+			}
+		}
+	}()
+
+	// Send the error.
 	return
 }
 
@@ -249,18 +309,20 @@ func (c *connection) heartbeatLoop() {
 }
 
 // Starts a read loop.
-func (c *connection) readLoop() {
+func (c *connection) readLoop(r payloadReader) {
 	for {
 		// Set a read timeout.
 		_ = c.ws.SetReadDeadline(time.Now().Add(clientHeartbeat * 2))
 
 		// Get the packet.
-		_, p, err := c.r.ReadMessage()
+		_, p, err := r.ReadMessage()
 		if err != nil {
 			c.disconnectorsLock.Lock()
 			d := c.disconnectors
 			c.disconnectorsLock.Unlock()
-			d()
+			if d != nil {
+				d()
+			}
 			_ = c.ws.Close()
 			return
 		}
@@ -283,7 +345,7 @@ func (c *connection) readLoop() {
 }
 
 // Starts everything to handle this connection.
-func (c *connection) start() {
+func (c *connection) start(re payloadReader) {
 	// Send a accepted payload message.
 	err := c.send(AcceptedPayload{
 		HeartbeatInterval: uint(clientHeartbeat.Milliseconds()),
@@ -326,7 +388,9 @@ func (c *connection) start() {
 		c.disconnectorsLock.Lock()
 		d := c.disconnectors
 		c.disconnectorsLock.Unlock()
-		d()
+		if d != nil {
+			d()
+		}
 		_ = c.ws.Close()
 		return
 	}
@@ -338,5 +402,5 @@ func (c *connection) start() {
 	// c.subscribeToEvents() // TODO
 
 	// Start the read loop.
-	c.readLoop()
+	c.readLoop(re)
 }

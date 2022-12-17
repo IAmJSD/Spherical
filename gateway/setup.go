@@ -177,9 +177,8 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 	// We are authenticated! Spin up the connection!
 	conn := &connection{
 		ws:   ws,
-		r:    re,
 		w:    wr,
 		user: &user,
 	}
-	conn.start()
+	conn.start(re)
 }

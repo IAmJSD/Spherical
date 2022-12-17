@@ -60,6 +60,14 @@ func parsePayload(b []byte) any {
 			return nil
 		}
 		return p
+	case 5:
+		// Parse the GuildUpdatePayload payload.
+		p := &GuildUpdatePayload{}
+		err := msgpack.Unmarshal(b, p)
+		if err != nil {
+			return nil
+		}
+		return p
 	}
 	return nil
 }
@@ -71,6 +79,8 @@ func serializePayload(p any) ([]byte, error) {
 	switch p.(type) {
 	case *AcceptedPayload, AcceptedPayload:
 		id = 1
+	case *GuildUpdatePayload, GuildUpdatePayload:
+		id = 5
 	case *HeartbeatPayload, HeartbeatPayload:
 		id = 2
 	case *HelloPayload, HelloPayload:

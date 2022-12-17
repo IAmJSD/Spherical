@@ -135,3 +135,10 @@ type ReadyPayload struct {
 }
 
 // generate_serializer_case ReadyPayload 4
+
+// GuildUpdatePayload is used to define a guild update payload.
+type GuildUpdatePayload struct {
+	Guild `msgpack:",inline"`
+}
+
+// generate_serializer_case GuildUpdatePayload 5

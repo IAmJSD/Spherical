@@ -17,7 +17,7 @@ type UserFlag uint64
 
 const (
 	// UserFlagOwner is used to define a server owner.
-	UserFlagOwner = 1 << iota
+	UserFlagOwner UserFlag = 1 << iota
 )
 
 // UserPasswordCreateOpts is the options required to create a user with a password.
