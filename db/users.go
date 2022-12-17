@@ -8,6 +8,8 @@ import (
 	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v5"
+	"github.com/jakemakesstuff/spherical/errhandler"
+	"github.com/jakemakesstuff/spherical/utils/httperrors"
 	"github.com/jakemakesstuff/spherical/utils/password"
 	"github.com/jakemakesstuff/spherical/utils/regexes"
 )
@@ -118,4 +120,80 @@ func ScanUserFromToken(ctx context.Context, token string, user any) error {
 	return pgxscan.Get(
 		ctx, dbConn(), user,
 		"SELECT * FROM users WHERE user_id = (SELECT user_id FROM sessions WHERE token = $1)", token)
+}
+
+// ErrInvalidCredentials is used to define an error thrown by CheckPassword.
+var ErrInvalidCredentials = errors.New("invalid credentials")
+
+// ErrNotPasswordAuth is used to define an error thrown by CheckPassword.
+var ErrNotPasswordAuth = errors.New("user is not password authenticated")
+
+// AuthenticateUserByPassword is used to authenticate a user by their password. If there is an error, it will return either:
+// a) Any other error - ignore the rest of this if this is the case.
+// b) A half-authentication token - this is a special type of token that can be used to authenticate the user with a 2FA
+// code. If this is the case, the error will be of type httperrors.HalfAuthentication and contain more information.
+// c) ErrInvalidCredentials - this is returned if the credentials are invalid.
+// d) ErrNotPasswordAuth - this is returned if the user is not using password authentication.
+// !! PLEASE READ THE ABOVE CAREFULLY - THIS IS AUTHENTICATION, WE CANNOT AFFORD TO MAKE ERRORS !!
+func AuthenticateUserByPassword(ctx context.Context, usernameOrEmail, passwordInput string) (uint64, error) {
+	// Get the user ID and password.
+	query := "SELECT password_authentication_users.user_id, password_authentication_users.password FROM " +
+		"users LEFT JOIN password_authentication_users ON users.user_id = password_authentication_users.user_id " +
+		"WHERE users.username = $1 OR users.email = $1"
+	var userIdPtr *uint64
+	var passwordHash *string
+	err := dbConn().QueryRow(ctx, query, usernameOrEmail).Scan(&userIdPtr, &passwordHash)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			// Turn the error into an invalid credentials error.
+			return 0, ErrInvalidCredentials
+		}
+		return 0, err
+	}
+
+	// Check if the user is using password authentication.
+	if userIdPtr == nil {
+		return 0, ErrNotPasswordAuth
+	}
+
+	// Update last_login_attempt on the user.
+	userId := *userIdPtr
+	_, err = dbConn().Exec(ctx, "UPDATE users SET last_login_attempt = NOW() WHERE user_id = $1", userId)
+	if err != nil {
+		errhandler.Process(err, "db/users/AuthenticateUserByPassword", map[string]string{
+			"action": "update last_login_attempt, invalid auth pathway",
+		})
+	}
+
+	// Validate the password.
+	hashValid := password.Validate(*passwordHash, passwordInput)
+	if !hashValid {
+		return 0, ErrInvalidCredentials
+	}
+
+	// We now know the password is valid. Let's check if the user has 2FA enabled.
+	query = "SELECT totp_token IS NOT NULL FROM users_mfa WHERE udser_id = $1"
+	totpEnabled := false
+	err = dbConn().QueryRow(ctx, query, userId).Scan(&totpEnabled)
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		return 0, err
+	}
+
+	// Handle if the user has 2FA enabled.
+	if totpEnabled {
+		// Generate a half-authentication token.
+		token, err := BuildHalfToken(ctx, userId)
+		if err != nil {
+			return 0, err
+		}
+
+		// Return the half-authentication error.
+		return 0, httperrors.HalfAuthentication{
+			SupportedMethods: []string{"totp", "recovery"},
+			HalfToken:        token,
+		}
+	}
+
+	// Return the user ID.
+	return userId, nil
 }

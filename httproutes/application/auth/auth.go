@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/jackc/pgx/v5"
@@ -17,6 +18,8 @@ import (
 	"github.com/jakemakesstuff/spherical/errhandler"
 	"github.com/jakemakesstuff/spherical/hashverifier"
 	"github.com/jakemakesstuff/spherical/i18n"
+	"github.com/jakemakesstuff/spherical/jobs"
+	"github.com/jakemakesstuff/spherical/scheduler"
 	"github.com/jakemakesstuff/spherical/utils/httperrors"
 )
 
@@ -78,6 +81,17 @@ func getUserData(r *http.Request) (*http.Request, bool, error) {
 		present := err == nil
 		if errors.Is(err, pgx.ErrNoRows) {
 			err = nil
+		}
+		if present {
+			// Keep the token alive if possible.
+			_, _ = jobs.TokenExtendJob.ScheduleImmediately(r.Context(), jobs.TokenExtendEvent{
+				Token: token,
+				In:    time.Hour * 24 * 30,
+			}, scheduler.Metadata{
+				Retries:        2,
+				Timeout:        time.Second * 5,
+				RefireDuration: time.Second,
+			})
 		}
 		user.Hostname = config.Config().Hostname
 		r.WithContext(context.WithValue(r.Context(), "user", &user))

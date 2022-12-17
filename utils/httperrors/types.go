@@ -19,6 +19,12 @@ const (
 
 	// HTTPCodeSameNode is an error that is used when the user is on the same node for a cross-node specific request.
 	HTTPCodeSameNode = HTTPCode("same_node")
+
+	// HTTPCodeHalfAuthenticated is used when the user is half authenticated.
+	HTTPCodeHalfAuthenticated = HTTPCode("half_authenticated")
+
+	// HTTPCodeNoPasswordAuthSupport is used when the user does not support password authentication.
+	HTTPCodeNoPasswordAuthSupport = HTTPCode("no_password_auth_support")
 )
 
 // HTTPError is used to define a interface that represents an HTTP error.
@@ -71,3 +77,26 @@ type SameNode struct {
 
 func (i SameNode) status() int         { return http.StatusBadRequest }
 func (i SameNode) errorCode() HTTPCode { return HTTPCodeSameNode }
+
+// HalfAuthentication is thrown when the user is only partially authenticated. This is used for 2FA.
+type HalfAuthentication struct {
+	// SupportedMethods is the supported authentication methods.
+	SupportedMethods []string `json:"supported_methods" xml:"supported_methods" msgpack:"supported_methods"`
+
+	// HalfToken is the half token that can be used to complete the authentication.
+	HalfToken string `json:"half_token" xml:"half_token" msgpack:"half_token"`
+}
+
+// Error implements the error interface.
+func (h HalfAuthentication) Error() string { return "user half authenticated" }
+
+func (h HalfAuthentication) status() int         { return http.StatusUnauthorized }
+func (h HalfAuthentication) errorCode() HTTPCode { return HTTPCodeHalfAuthenticated }
+
+// NoPasswordAuthSupport is thrown when the user does not support password authentication.
+type NoPasswordAuthSupport struct {
+	Message string `json:"message" xml:"message" msgpack:"message"`
+}
+
+func (n NoPasswordAuthSupport) status() int         { return http.StatusUnauthorized }
+func (n NoPasswordAuthSupport) errorCode() HTTPCode { return HTTPCodeNoPasswordAuthSupport }
