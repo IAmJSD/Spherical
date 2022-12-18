@@ -9,12 +9,25 @@
     "start:dev": "yarn run bundle:dev && cross-env DEV=true go run ./cmd/spherical",
     "start:prod": "yarn run bundle:prod && cross-env DEV=false go run ./cmd/spherical",
     "build": "yarn run bundle:prod && rimraf dist && mkdir dist && node ./scripts/buildBinaries.js",
-    "test:integration": "./integration/run.sh"
+    "test:integration": "./integration/run.sh",
+    "storybook": "start-storybook -p 6006",
+    "build-storybook": "build-storybook"
   },
   "devDependencies": {
+    "@babel/core": "^7.20.5",
+    "@storybook/addon-actions": "^6.5.14",
+    "@storybook/addon-essentials": "^6.5.14",
+    "@storybook/addon-interactions": "^6.5.14",
+    "@storybook/addon-links": "^6.5.14",
+    "@storybook/builder-webpack5": "^6.5.14",
+    "@storybook/manager-webpack5": "^6.5.14",
+    "@storybook/preact": "^6.5.14",
+    "@storybook/testing-library": "^0.0.13",
     "@types/markdown-it": "^12.2.3",
     "@types/styled-components": "^5.1.26",
+    "babel-loader": "^8.3.0",
     "babel-plugin-styled-components": "^2.0.7",
+    "core-js": "^3.26.1",
     "rimraf": "^3.0.2",
     "ts-loader": "^9.4.1",
     "typescript": "^4.8.4",
@@ -27,6 +40,7 @@
     "cross-env": "^7.0.3",
     "markdown-it": "^13.0.1",
     "preact": "^10.11.2",
+    "react-router-dom": "^6.5.0",
     "styled-components": "^5.3.6"
   },
   "alias": {

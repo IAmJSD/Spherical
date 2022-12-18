@@ -1,6 +1,5 @@
 {
   "plugins": [
-    ["transform-react-jsx", { "pragma": "h" }],
     ["babel-plugin-styled-components", {
       "minify": false,
       "transpileTemplateLiterals": false
