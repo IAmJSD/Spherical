@@ -36,12 +36,12 @@ This list will grow as I think of things that we need to release:
   - [X] Streaming in markdown loader
   - [X] Basic helpers (Notifications, buttons, loading, flexbox)
 - [ ] User Registration
-  - [ ] Backend functions
+  - [X] Backend functions
   - [ ] API routes
   - [ ] Frontend
 - [X] Out of box experience
   - [X] Setup key fetching
-  - [X] S3 configuration (abd tests)
+  - [X] S3 configuration (amd tests)
   - [X] E-mail configuration (and tests)
   - [X] Server Information
   - [X] Owner User Setup
