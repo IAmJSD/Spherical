@@ -14,6 +14,9 @@ func Router(r *mux.Router) {
 	r.Methods("POST").Path("/gateway/cross_node").Handler(auth.Middleware(http.HandlerFunc(crossNodeGwHn)))
 	r.Path("/gateway").HandlerFunc(gateway.WebSocketHandler)
 
+	// Defines routes relating to the node.
+	r.Methods("GET").Path("/node").HandlerFunc(nodeInfoHn)
+
 	// Defines authentication related routes.
 	r.Methods("POST").Path("/auth/password").HandlerFunc(authPasswordHn)
 	//r.Methods("POST").Path("/auth/step/mfa").HandlerFunc(authExtraMFAHn)
