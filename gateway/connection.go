@@ -181,7 +181,7 @@ func (c *connection) spawnCrossNodeConn(
 			return
 		}
 
-		// Send all compatible available guilds as update payloads.
+		// Send all compatible available guilds as update payloads.ts.
 		for _, v := range ready.AvailableGuilds {
 			if helpers.SliceIncludes(guildIds, v.ID) {
 				// Ensure the hostname is what we expect and then send it.

@@ -5,13 +5,27 @@ import (
 	"strconv"
 
 	"github.com/gorilla/mux"
+	"github.com/jakemakesstuff/spherical/config"
+	"github.com/jakemakesstuff/spherical/html"
 	"github.com/jakemakesstuff/spherical/httproutes/application/apiv1"
 	"github.com/jakemakesstuff/spherical/httproutes/shared"
+	"github.com/jakemakesstuff/spherical/i18n"
 )
+
+func genericHtmlWriterHn(w http.ResponseWriter, r *http.Request) {
+	c := config.Config()
+	title := c.ServerName
+	description := i18n.GetWithRequest(r, "httproutes/application/router:description")
+	html.Handler(
+		title, description, false, nil, http.StatusOK)(w, r)
+}
 
 // Router is used to return this packages router.
 func Router(dev bool) http.Handler {
 	r := mux.NewRouter()
+
+	r.Path("/").HandlerFunc(genericHtmlWriterHn)
+	r.Path("/app").HandlerFunc(genericHtmlWriterHn)
 
 	r.PathPrefix("/setup").HandlerFunc(func(writer http.ResponseWriter, req *http.Request) {
 		http.Redirect(writer, req, "/", http.StatusPermanentRedirect)

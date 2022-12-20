@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -165,6 +166,7 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 		// Get the user data from the token.
 		err = db.ScanUserFromToken(ctx, payload.Token, &user)
 		if err != nil {
+			fmt.Println(err)
 			disconnectWs(ws, &DisconnectPayload{
 				Reason:    "invalid token",
 				Reconnect: false,

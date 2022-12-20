@@ -1,0 +1,17 @@
+msgid "welcome"
+msgstr "Welcome to {nodeName}!"
+
+msgid "enter_username_and_password"
+msgstr "Please enter your username and password to continue."
+
+msgid "username_or_email_address"
+msgstr "Username or email address"
+
+msgid "password"
+msgstr "Password"
+
+msgid "login"
+msgstr "Login"
+
+msgid "empty"
+msgstr "The username or password field is empty."

@@ -119,7 +119,7 @@ func HasOwner(ctx context.Context) bool {
 func ScanUserFromToken(ctx context.Context, token string, user any) error {
 	return pgxscan.Get(
 		ctx, dbConn(), user,
-		"SELECT * FROM users WHERE user_id = (SELECT user_id FROM sessions WHERE token = $1)", token)
+		"SELECT username, user_id, flags, avatar_url, email, confirmed FROM users WHERE user_id = (SELECT user_id FROM sessions WHERE token = $1)", token)
 }
 
 // ErrInvalidCredentials is used to define an error thrown by CheckPassword.

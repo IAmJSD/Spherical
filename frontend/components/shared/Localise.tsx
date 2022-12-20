@@ -3,6 +3,7 @@ import { useEffect, useState } from "preact/hooks";
 import { decode } from "@msgpack/msgpack";
 import CallbackManager from "../../helpers/CallbackManager";
 import asyncComponent from "../../helpers/asyncComponent";
+import msgpackGet from "../../helpers/msgpackGet";
 
 const Markdown = asyncComponent(() => import("./Markdown"));
 
@@ -12,9 +13,9 @@ const Markdown = asyncComponent(() => import("./Markdown"));
 export let i18nCallbacks: CallbackManager<void> | null = new CallbackManager();
 export let strings: {[key: string]: string};
 const hn = () => {
-    fetch("/api/internal/i18n").then(async x => {
+    msgpackGet("/api/internal/i18n").then(x => {
         if (!x.ok) throw new Error(`Request returned ${x.status}`);
-        strings = decode(await x.arrayBuffer()) as {[key: string]: string};
+        strings = x.body as {[key: string]: string};
         const y = i18nCallbacks;
         i18nCallbacks = null;
         y.runAll();
@@ -45,7 +46,9 @@ export default (props: Props) => {
     useEffect(() => {
         if (i18nCallbacks) {
             const i = i18nCallbacks.new(() => setKey(strings[props.i18nKey]));
-            return () => i18nCallbacks.delete(i);
+            return () => {
+                if (i18nCallbacks) i18nCallbacks.delete(i);
+            };
         }
         setKey(strings[props.i18nKey]);
     }, []);

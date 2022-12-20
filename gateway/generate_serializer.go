@@ -28,8 +28,8 @@ func (s uint16Sorter) Swap(i, j int) {
 }
 
 func main() {
-	// Open payloads.go.
-	f, err := os.Open("payloads.go")
+	// Open payloads.ts.go.
+	f, err := os.Open("payloads.ts.go")
 	if err != nil {
 		panic(err)
 	}

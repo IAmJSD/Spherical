@@ -1,0 +1,2 @@
+msgid "description"
+msgstr "A instance of Spherical. A open source chat application."

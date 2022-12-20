@@ -54,6 +54,9 @@ type Structure struct {
 	// ServerDescription is used to define the description of the Spherical server.
 	ServerDescription string `config:"server_description"`
 
+	// ServerBackground is used to define the background of the Spherical server.
+	ServerBackground string `config:"server_background"`
+
 	// ServerPublic defines if guilds or members within a server are public.
 	ServerPublic bool `config:"server_public"`
 
